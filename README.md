@@ -8,7 +8,7 @@ This repository will hosts all code and documentation for the Hemp DB Capstone, 
 2. `cp .env.example .env`
 3. Add credentials to .env file
 4. run `docker-compose up --build`
-5. Open localhost:80
+5. Open http://localhost:80
 
 ## Local Development
 

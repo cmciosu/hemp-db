@@ -83,10 +83,10 @@ WSGI_APPLICATION = 'hempdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'hempdb',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'db',
+        'NAME': os.getenv('MYSQL_NAME'),
+        'USER': os.getenv('MYSQL_USER'),
+        'PASSWORD': os.getenv('MYSQL_PASS'),
+        'HOST': os.getenv('MYSQL_HOST'),
         'PORT': '3306',
     }
 }

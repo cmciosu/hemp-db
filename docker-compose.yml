@@ -1,24 +1,6 @@
 version: '3'
 
 services:
-  db:
-    container_name: mysql
-    image: mysql:8.0
-    restart: always
-    command: mysqld
-    volumes:
-      - ./mysql:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpw
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=hempdb
-    ports:
-      - 3306:3306
-    healthcheck:
-        test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-        timeout: 5s
-        retries: 10
   web:
     container_name: django
     build: .
@@ -28,6 +10,3 @@ services:
       - .:/code
     ports:
       - "80:8000"
-    depends_on:
-      db: 
-        condition: service_healthy
