@@ -15,7 +15,7 @@ This repository will hosts all code and documentation for the Hemp DB Capstone, 
 
 1. Checkout new branch
 2. `docker build -t hempdb`
-3. `docker run --name hempdb-dev -it -p 80:8000 -v $(pwd):/code hempdb`
+3. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`
 4. Develop Features
 
 no need to restart docker, local code will be synced up with code in container. Just code, ctrl + s, see changes in browser
