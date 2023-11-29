@@ -8,8 +8,8 @@ This repository will hosts all code and documentation for the Hemp DB Capstone, 
 2. `cp .env.example .env`
 3. Add credentials to .env file
 4. `docker build -t hempdb`
-5. `docker run --name hempdb-dev -it -p 80:8000 -v $(pwd):/code hempdb`
-6. Open http://localhost:80
+5. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`
+6. Open http://localhost:8000
 
 ## Local Development
 
