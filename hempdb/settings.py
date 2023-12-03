@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# Usage:
+# MYSQL_HOST = os.getenv('MYSQL_HOST')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,10 +83,10 @@ WSGI_APPLICATION = 'hempdb.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'hempdb',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'db',
+        'NAME': os.environ.get('MYSQL_NAME', os.getenv('MYSQL_NAME')),
+        'USER': os.environ.get('MYSQL_USER', os.getenv('MYSQL_USER')),
+        'PASSWORD': os.environ.get('MYSQL_PASS', os.getenv('MYSQL_PASS')),
+        'HOST': os.environ.get('MYSQL_HOST', os.getenv('MYSQL_HOST')),
         'PORT': '3306',
     }
 }
