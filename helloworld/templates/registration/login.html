@@ -1,0 +1,14 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Hemp Stakeholder Database
+{% endblock %}
+
+{% block content %}
+    <h2>Log In</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Log In</button>
+    </form>
+{% endblock %}
