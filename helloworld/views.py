@@ -6,3 +6,7 @@ from django.template import loader
 def index(request):
     template = loader.get_template('home.html')
     return HttpResponse(template.render())
+
+def database1(request):
+    template = loader.get_template('companies.html')
+    return HttpResponse(template.render())
