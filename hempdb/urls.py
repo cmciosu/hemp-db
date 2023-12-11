@@ -22,7 +22,6 @@ from django.urls import path
 
 urlpatterns = [
     path("", include("helloworld.urls")),
-    path('companies/',include("helloworld.urls")),
     path('admin/', admin.site.urls),
     path("user/", include("django.contrib.auth.urls"))
 ]
