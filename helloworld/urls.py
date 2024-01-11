@@ -11,9 +11,6 @@ urlpatterns = [
     # Create view for a new company
     path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
 
-    # Update view for a specific company
-    # path('companies/<int:pk>/update/', CompanyUpdateView.as_view(), name='company-update'),
-
     # Delete view for a specific company
     path('remove_companies/<int:id>', views.remove_companies),
 ]
