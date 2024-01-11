@@ -1,0 +1,13 @@
+<!-- company_list.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Companies</h2>
+  <ul>
+    {% for company in companies %}
+      <li>{{ company.name }} - {{ company.industry }}</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'company-create' %}"><button>Create New Company</button></a>
+{% endblock %}
