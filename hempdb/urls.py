@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
-
+from django.views.generic.base import TemplateView
 """
 URL configuration for hempdb project.
 
@@ -23,4 +23,5 @@ from django.urls import path
 urlpatterns = [
     path("", include("helloworld.urls")),
     path('admin/', admin.site.urls),
+    path("user/", include("django.contrib.auth.urls"))
 ]
