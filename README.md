@@ -22,7 +22,10 @@ Note:
 
 **no need to restart docker, local code will be synced up with code in container. Just code, ctrl + s, see changes in browser**
 
-5. Open PR
+6. Lint with `ruff check .`
+6.a Fix with `ruff check . --fix`
+
+7. Open PR
 
 Make sure to add any new dependencies to requirements.txt
 
