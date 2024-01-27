@@ -6,13 +6,11 @@ from .models import Company
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.decorators import login_required
 
-# @login_required
 class CompanyListView(ListView):
     model = Company
     template_name = 'company_list.html'
     context_object_name = 'companies'
 
-# @login_required
 class CompanyCreateView(CreateView):
     model = Company
     template_name = 'company_form.html'
@@ -41,7 +39,6 @@ def companies(request):
 
     return render(request, 'companies.html', {'form': form, 'companies': companies})
 
-# @login_required
 def remove_companies(request, id):
     company = Company.objects.get(id = id)
     company.delete()
