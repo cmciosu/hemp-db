@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
-from .views import CompanyListView, CompanyCreateView
-from django.contrib.auth.decorators import login_required
+from .views import CompanyCreateView
 
 urlpatterns = [
     path("", views.index, name="index"),
