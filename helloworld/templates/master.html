@@ -25,7 +25,23 @@
         </div>
       </li>
     </ul>
-    <a class="nav-link link-light" href="/user/login">LOGIN</a>
+    {% if user.is_authenticated %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Logged in as {{ user.get_username }}
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="#">Account</a>
+          <a class="dropdown-item" href="#">Settings</a>
+          {% if user.is_staff %}
+            <a class="dropdown-item" href="/admin">Admin</a>
+          {% endif %}
+          <a class="dropdown-item" href="/user/logout">Logout</a>
+        </div>
+      </li>
+    {% else %}
+      <a class="nav-link link-light" href="/user/login">LOGIN</a>
+    {% endif %}  
   </div>
 </nav>
 
