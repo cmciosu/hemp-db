@@ -13,8 +13,8 @@ class Category(models.Model):
     class Meta:
         db_table = "Categories"
 
-class Group(models.Model):
-    group = models.CharField(max_length=250)
+class stakeholderGroups(models.Model):
+    stakeholderGroup = models.CharField(max_length=250)
 
     class Meta:
         db_table = "Groups"
@@ -57,7 +57,7 @@ class Company(models.Model):
     Solutions = models.ForeignKey(Solution, on_delete=models.CASCADE)
     Website = models.CharField(max_length=250)
     Category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    Group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    stakeholderGroup = models.ForeignKey(stakeholderGroups, on_delete=models.CASCADE)
     Stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
     productGroup = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
     Products = models.CharField(max_length=250)
