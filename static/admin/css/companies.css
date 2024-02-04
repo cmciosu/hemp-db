@@ -1,0 +1,14 @@
+ul {
+  list-style-type: none;
+}
+
+#formFieldContainer {
+  display: block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.modalButton {
+  float: right;
+  margin-right: 5px;
+}

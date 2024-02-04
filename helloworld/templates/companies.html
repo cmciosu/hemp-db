@@ -5,6 +5,8 @@
 {% endblock %}
 
 {% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
 
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
   <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
@@ -142,45 +144,22 @@
           <h4 class="modal-title">Create</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-  
-        <form method="POST" action="/companies/" class="modal-body post-form">
+
+        <form id="upload_form" method="post" action="/companies/">
+
           {% csrf_token %}
-          <div class="form-group row">
-            <label>Name</label>
-            {{ form.Name }}
-          </div>
-          <div class="form-group row">
-            <label>Industry</label>
-            {{ form.Industry }}
-          </div>
-          <div class="form-group row">
-            <label>Status</label>
-            {{ form.Status }}
-          </div>
-          <div class="form-group row">
-            <label>Info</label>
-            {{ form.Info }}
-          </div>
-          <div class="form-group row">
-            <label>Headquarters</label>
-            {{ form.Headquarters }}
-          </div>
-          <div class="form-group row">
-            <label>Sales</label>
-            {{ form.Sales }}
-          </div>
-          <div class="form-group row">
-            <label>Product</label>
-            {{ form.Product }}
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-danger" data-bs-dismiss="modal"  value="Submit">Submit</button>
+          <div id="formFieldContainer">
+            {% for field in form %}
+              <p> {{ field.label_tag }} </p>
+              <p id="formEntryField"> {{ field }} </p>
+            {% endfor %}
           </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+
+        <div class="modalFooter">
+          <button type="submit" class="btn btn-danger modalButton" data-bs-dismiss="modal"  value="Submit">Submit</button>
+          <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
         </div>
-  
       </div>
     </div>
   </div>
