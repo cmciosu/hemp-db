@@ -2,8 +2,7 @@
 from django import forms
 from helloworld.models import Company
 
-class FileUploadForm(forms.ModelForm):
-    # file = forms.FileField()
+class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
@@ -11,4 +10,3 @@ class FileUploadForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["Status"].widget.attrs.update({"class": "form-control"})

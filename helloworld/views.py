@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import FileUploadForm
+from .forms import CompanyForm
 from .models import Company
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.decorators import login_required
@@ -27,13 +27,13 @@ def company_list(request):
 def companies(request):
     companies = Company.objects.all()
     if request.method == 'POST':
-        form = FileUploadForm(request.POST, request.FILES)
+        form = CompanyForm(request.POST, request.FILES)
         print(form)
         if form.is_valid():
             form.save()
             return redirect('/companies')  # Redirect to a success page
     else:
-        form = FileUploadForm()
+        form = CompanyForm()
 
     return render(request, 'companies.html', {'form': form, 'companies': companies})
 

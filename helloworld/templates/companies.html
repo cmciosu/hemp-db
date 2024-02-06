@@ -5,6 +5,8 @@
 {% endblock %}
 
 {% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
 
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
   <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
@@ -37,6 +39,40 @@
         <th scope="col">Headquarters</th>
         <th scope="col">Sales</th>
         <th scope="col">Product</th>
+        <th scope="col">City</th>
+        <th scope="col">State</th>
+        <th scope="col">Country</th>
+        <th scope="col">Solutions</th>
+        <th scope="col">Website</th>
+        <th scope="col">Category</th>
+        <th scope="col">stakeholderGroup</th>
+        <th scope="col">Stage</th>
+        <th scope="col">productGroup</th>
+        <th scope="col">Products</th>
+        <th scope="col">sasContact</th>
+        <th scope="col">Description</th>
+        <th scope="col">pubPriv</th>
+        <th scope="col">Ticker</th>
+        <th scope="col">Naics</th>
+        <th scope="col">Phone</th>
+        <th scope="col">Email</th>
+        <th scope="col">Stakeholder</th>
+        <th scope="col">Principal</th>
+        <th scope="col">Founded</th>
+        <th scope="col">Employees</th>
+        <th scope="col">parentCompany</th>
+        <th scope="col">onMarket</th>
+        <th scope="col">productName</th>
+        <th scope="col">SKU</th>
+        <th scope="col">Notes</th>
+        <th scope="col">salesRev</th>
+        <th scope="col">processingFocus</th>
+        <th scope="col">facilitySize</th>
+        <th scope="col">biomassCap</th>
+        <th scope="col">extractionType</th>
+        <th scope="col">GMP</th>
+        <th scope="col">news</th>
+        <th scope="col">reviews</th>
       </tr>
     </thead>
     <tbody>
@@ -51,6 +87,42 @@
           <td>{{ company.Headquarters }}</td>
           <td>{{ company.Sales }}</td>
           <td>{{ company.Product }}</td>
+          <td>{{ company.City }}</td>
+          <td>{{ company.State }}</td>
+          <td>{{ company.Country }}</td>
+          <td>{{ company.Solutions.solution }}</td>
+          <td>{{ company.Website }}</td>
+          <td>{{ company.Category.category }}</td>
+          <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
+          <td>{{ company.Stage.stage }}</td>
+          <td>{{ company.productGroup.productGroup }}</td>
+          <td>{{ company.Products }}</td>
+          <td>{{ company.sasContact }}</td>
+          <td>{{ company.Description }}</td>
+          <td>{{ company.pubPriv }}</td>
+          <td>{{ company.Ticker }}</td>
+          <td>{{ company.Naics }}</td>
+          <td>{{ company.Phone }}</td>
+          <td>{{ company.Email }}</td>
+          <td>{{ company.Stakeholder }}</td>
+          <td>{{ company.Principal }}</td>
+          <td>{{ company.Founded }}</td>
+          <td>{{ company.Employees }}</td>
+          <td>{{ company.parentCompany }}</td>
+          <td>{{ company.onMarket }}</td>
+          <td>{{ company.productName }}</td>
+          <td>{{ company.SKU }}</td>
+          <td>{{ company.Notes }}</td>
+          <td>{{ company.salesRev }}</td>
+          <td>{{ company.processingFocus.processingFocus }}</td>
+          <td>{{ company.facilitySize }}</td>
+          <td>{{ company.biomassCap }}</td>
+          <td>{{ company.extractionType.extractionType }}</td>
+          <td>{{ company.GMP }}</td>
+          <td>{{ company.news }}</td>
+          <td>{{ company.reviews }}</td>
+ 
+
           <td><button type="button" class="btn btn-secondary">Edit</button></td>
           <td><a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
             <!-- Delete -->
@@ -72,45 +144,22 @@
           <h4 class="modal-title">Create</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-  
-        <form method="POST" action="/companies/" class="modal-body post-form">
+
+        <form id="upload_form" method="post" action="/companies/">
+
           {% csrf_token %}
-          <div class="form-group row">
-            <label>Name</label>
-            {{ form.Name }}
-          </div>
-          <div class="form-group row">
-            <label>Industry</label>
-            {{ form.Industry }}
-          </div>
-          <div class="form-group row">
-            <label>Status</label>
-            {{ form.Status }}
-          </div>
-          <div class="form-group row">
-            <label>Info</label>
-            {{ form.Info }}
-          </div>
-          <div class="form-group row">
-            <label>Headquarters</label>
-            {{ form.Headquarters }}
-          </div>
-          <div class="form-group row">
-            <label>Sales</label>
-            {{ form.Sales }}
-          </div>
-          <div class="form-group row">
-            <label>Product</label>
-            {{ form.Product }}
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-danger" data-bs-dismiss="modal"  value="Submit">Submit</button>
+          <div id="formFieldContainer">
+            {% for field in form %}
+              <p> {{ field.label_tag }} </p>
+              <p id="formEntryField"> {{ field }} </p>
+            {% endfor %}
           </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+
+        <div class="modalFooter">
+          <button type="submit" class="btn btn-danger modalButton" data-bs-dismiss="modal"  value="Submit">Submit</button>
+          <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
         </div>
-  
       </div>
     </div>
   </div>
