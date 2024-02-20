@@ -1,18 +1,20 @@
 {% extends "master.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}
-  Hemp Stakeholder Database
+	Hemp Stakeholder Database
 {% endblock %}
 
 {% block content %}
-    <h2>Log In</h2>
+    <h2>
+        <style> h2 {margin-left: 10px;}; </style>
+        Sign In
+    </h2>
     <form method="post">
+        <style> input {max-width: 50%;} div {margin-left: 10px;}; </style>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Log In</button>
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Sign In</button>
+		<a href="/user/register" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Sign Up </a>
     </form>
-    <p>
-      Don't have an Account?
-    </p>
-    <a class="dropdown-item" href="/user/register">Sign Up</a>
 {% endblock %}
