@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from .forms import CompanyForm
+from .forms import UserRegisterForm
 from .models import Company
 from django.views.generic import ListView, CreateView
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 class CompanyListView(ListView):
     model = Company
@@ -18,6 +21,23 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            password=form.cleaned_data.get('password1')
+
+            messages.success(request, 'Account Created')
+            user = authenticate(username=username, password=password)
+
+            login(request, user)
+            return redirect('/')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'registration/register.html', {'form': form})
+
 @login_required
 def company_list(request):
     companies = Company.objects.all()
@@ -28,7 +48,6 @@ def companies(request):
     companies = Company.objects.all()
     if request.method == 'POST':
         form = CompanyForm(request.POST, request.FILES)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/companies')  # Redirect to a success page

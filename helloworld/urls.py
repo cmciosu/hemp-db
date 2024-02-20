@@ -13,4 +13,6 @@ urlpatterns = [
 
     # Delete view for a specific company
     path('remove_companies/<int:id>', views.remove_companies),
+
+    path('user/register', views.register),
 ]
