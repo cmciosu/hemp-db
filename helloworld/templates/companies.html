@@ -32,21 +32,29 @@
       <tr>
         <th scope="col">   </th>
         <th scope="col">Company Name</th>
-        <th scope="col">Industry</th>
         <th scope="col">Status</th>
-        <th scope="col">Headquarters</th>
+        <th scope="col">Industry</th>
+        <th scope="col">Stakeholder Category</th>
+        <th scope="col">Stakeholder Group</th>
+        <th scope="col">Stage</th>
+        <th scope="col">Product Group</th>
         <th scope="col">Description</th>
+        <th scope="col">Solution</th>
+      </tr>
     </thead>
     <tbody>
       {% for company in companies %}
         <tr>
           <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
           <td><a href="{% url 'company-view' company.id%}">{{ company.Name }}</a></td>
-          <td>{{ company.Industry }}</td>
           <td style="{% if company.Status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status }}</b></td>
-          <td>{{ company.Headquarters }}</td>
+          <td>{{ company.Industry }}</td>
+          <td>{{ company.Category.category }}</td>
+          <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
+          <td>{{ company.Stage.stage }}</td>
+          <td>{{ company.productGroup.productGroup }}</td>
           <td>{{ company.Description }}</td>
-
+          <td>{{ company.Solutions.solution }}</td>
 
           <td><button type="button" class="btn btn-secondary">Edit</button></td>
           <td><a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
