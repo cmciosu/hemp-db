@@ -18,6 +18,10 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
+def view_company(request, id):
+    company = Company.objects.get(id = id)
+    return render(request, 'company_view.html', {'company': company})
+
 @login_required
 def company_list(request):
     companies = Company.objects.all()
