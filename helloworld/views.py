@@ -3,6 +3,7 @@ from .forms import CompanyForm
 from .models import Company
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 
 class CompanyListView(ListView):
     model = Company
@@ -20,7 +21,10 @@ def index(request):
 
 def view_company(request, id):
     company = Company.objects.get(id = id)
-    return render(request, 'company_view.html', {'company': company})
+    # fields = Company._meta.get_fields()
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
 @login_required
 def company_list(request):
