@@ -20,5 +20,6 @@ Including another URLconf
 urlpatterns = [
     path("", include("helloworld.urls")),
     path('admin/', admin.site.urls),
+    #path('company/<str:company>/', views.company_info, name='company'),
     path("user/", include("django.contrib.auth.urls"))
 ]

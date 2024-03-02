@@ -33,97 +33,31 @@
     <thead>
       <tr>
         <th scope="col">   </th>
-        <th scope="col">Company ID</th>
         <th scope="col">Company Name</th>
-        <th scope="col">Industry</th>
         <th scope="col">Status</th>
-        <th scope="col">Info</th>
-        <th scope="col">Headquarters</th>
-        <th scope="col">Sales</th>
-        <th scope="col">Product</th>
-        <th scope="col">City</th>
-        <th scope="col">State</th>
-        <th scope="col">Country</th>
-        <th scope="col">Solutions</th>
-        <th scope="col">Website</th>
-        <th scope="col">Category</th>
-        <th scope="col">stakeholderGroup</th>
+        <th scope="col">Industry</th>
+        <th scope="col">Stakeholder Category</th>
+        <th scope="col">Stakeholder Group</th>
         <th scope="col">Stage</th>
-        <th scope="col">productGroup</th>
-        <th scope="col">Products</th>
-        <th scope="col">sasContact</th>
+        <th scope="col">Product Group</th>
         <th scope="col">Description</th>
-        <th scope="col">pubPriv</th>
-        <th scope="col">Ticker</th>
-        <th scope="col">Naics</th>
-        <th scope="col">Phone</th>
-        <th scope="col">Email</th>
-        <th scope="col">Stakeholder</th>
-        <th scope="col">Principal</th>
-        <th scope="col">Founded</th>
-        <th scope="col">Employees</th>
-        <th scope="col">parentCompany</th>
-        <th scope="col">onMarket</th>
-        <th scope="col">productName</th>
-        <th scope="col">SKU</th>
-        <th scope="col">Notes</th>
-        <th scope="col">salesRev</th>
-        <th scope="col">processingFocus</th>
-        <th scope="col">facilitySize</th>
-        <th scope="col">biomassCap</th>
-        <th scope="col">extractionType</th>
-        <th scope="col">GMP</th>
-        <th scope="col">news</th>
-        <th scope="col">reviews</th>
+        <th scope="col">Solution</th>
       </tr>
     </thead>
     <tbody>
       {% for company in companies %}
         <tr>
           <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
-          <td>{{ company.id }}</td>
-          <td>{{ company.Name }}</td>
-          <td>{{ company.Industry }}</td>
+          <td><a href="{% url 'company-view' company.id%}">{{ company.Name }}</a></td>
           <td style="{% if company.Status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status }}</b></td>
-          <td>{{ company.Info }}</td>
-          <td>{{ company.Headquarters }}</td>
-          <td>{{ company.Sales }}</td>
-          <td>{{ company.Product }}</td>
-          <td>{{ company.City }}</td>
-          <td>{{ company.State }}</td>
-          <td>{{ company.Country }}</td>
-          <td>{{ company.Solutions.solution }}</td>
-          <td><a href="{{ company.Website }}">{{ company.Website }}</a></td>
+          <td>{{ company.Industry }}</td>
           <td>{{ company.Category.category }}</td>
           <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
           <td>{{ company.Stage.stage }}</td>
           <td>{{ company.productGroup.productGroup }}</td>
-          <td>{{ company.Products }}</td>
-          <td>{{ company.sasContact }}</td>
           <td>{{ company.Description }}</td>
-          <td>{{ company.pubPriv }}</td>
-          <td>{{ company.Ticker }}</td>
-          <td>{{ company.Naics }}</td>
-          <td>{{ company.Phone }}</td>
-          <td><a href="mailto:{{ company.Email }}">{{ company.Email }}</a></td>
-          <td>{{ company.Stakeholder }}</td>
-          <td>{{ company.Principal }}</td>
-          <td>{{ company.Founded }}</td>
-          <td>{{ company.Employees }}</td>
-          <td>{{ company.parentCompany }}</td>
-          <td>{{ company.onMarket }}</td>
-          <td>{{ company.productName }}</td>
-          <td>{{ company.SKU }}</td>
-          <td>{{ company.Notes }}</td>
-          <td>{{ company.salesRev }}</td>
-          <td>{{ company.processingFocus.processingFocus }}</td>
-          <td>{{ company.facilitySize }}</td>
-          <td>{{ company.biomassCap }}</td>
-          <td>{{ company.extractionType.extractionType }}</td>
-          <td>{{ company.GMP }}</td>
-          <td>{{ company.news }}</td>
-          <td>{{ company.reviews }}</td>
- 
+          <td>{{ company.Solutions.solution }}</td>
+
 
           <td><button type="button" class="btn btn-secondary">Edit</button></td>
           <td><a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
