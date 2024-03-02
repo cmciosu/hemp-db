@@ -22,9 +22,8 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 from django.contrib import messages
-# import django.apps
-
 
 class CompanyListView(ListView):
     model = Company
@@ -43,6 +42,13 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
+def view_company(request, id):
+    company = Company.objects.get(id = id)
+    # fields = Company._meta.get_fields()
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view.html', {'company': company, 'obj': obj})
+  
 ## User Registration
 # path('user/register', views.register),
 

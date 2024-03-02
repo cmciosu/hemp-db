@@ -4,6 +4,7 @@ from django.urls import path
 from . import views
 from .views import CompanyCreateView
 
+
 urlpatterns = [
     # Root
     path("", views.index, name="index"),
@@ -11,6 +12,7 @@ urlpatterns = [
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
+    path('companies/<int:id>', views.view_company, name='company-view'),
     path('remove_companies/<int:id>', views.remove_companies),
 
     # Categories
