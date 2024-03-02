@@ -9,9 +9,11 @@
 <link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
 
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-  <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
-  <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
-  <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+  {% if user.is_staff %}
+    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
+    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
+    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+  {% endif %}
 
   <div class="btn-group" role="group">
     <button id="btnGroupDrop1" type="button" class="btn btn-secondary mx-3 my-2 px-3 rounded-pill dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -91,7 +93,7 @@
           <td>{{ company.State }}</td>
           <td>{{ company.Country }}</td>
           <td>{{ company.Solutions.solution }}</td>
-          <td>{{ company.Website }}</td>
+          <td><a href="{{ company.Website }}">{{ company.Website }}</a></td>
           <td>{{ company.Category.category }}</td>
           <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
           <td>{{ company.Stage.stage }}</td>
@@ -103,7 +105,7 @@
           <td>{{ company.Ticker }}</td>
           <td>{{ company.Naics }}</td>
           <td>{{ company.Phone }}</td>
-          <td>{{ company.Email }}</td>
+          <td><a href="mailto:{{ company.Email }}">{{ company.Email }}</a></td>
           <td>{{ company.Stakeholder }}</td>
           <td>{{ company.Principal }}</td>
           <td>{{ company.Founded }}</td>
@@ -154,12 +156,12 @@
               <p id="formEntryField"> {{ field }} </p>
             {% endfor %}
           </div>
+          <div class="modalFooter">
+            <button type="submit" class="btn btn-danger modalButton" data-bs-dismiss="modal"  value="Submit">Submit</button>
+            <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
+          </div>
         </form>
 
-        <div class="modalFooter">
-          <button type="submit" class="btn btn-danger modalButton" data-bs-dismiss="modal"  value="Submit">Submit</button>
-          <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
-        </div>
       </div>
     </div>
   </div>

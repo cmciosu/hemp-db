@@ -20,8 +20,15 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/companies">Companies</a>
-          <a class="dropdown-item" href="#">Database #2</a>
-          <a class="dropdown-item" href="#">Database #3</a>
+          {% if user.is_staff %}
+            <a class="dropdown-item" href="/solutions">Solutions</a>
+            <a class="dropdown-item" href="/categories">Categories</a>
+            <a class="dropdown-item" href="/stakeholder-groups">Stakeholder Groups</a>
+            <a class="dropdown-item" href="/stages">Stages</a>
+            <a class="dropdown-item" href="/product-groups">Product Groups</a>
+            <a class="dropdown-item" href="/processing-focus">Processing Focus</a>
+            <a class="dropdown-item" href="/extraction-types">Extraction Types</a>
+          {% endif %}
         </div>
       </li>
     </ul>

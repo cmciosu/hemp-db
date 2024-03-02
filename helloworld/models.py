@@ -1,6 +1,6 @@
+## Django
 from django.db import models
 
-# Create your models here.
 class Solution(models.Model):
     solution = models.CharField(max_length=250)
     
