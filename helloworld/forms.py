@@ -12,6 +12,9 @@ from .models import ProductGroup
 from .models import ProcessingFocus
 from .models import ExtractionType
 
+class SearchForm(forms.Form):
+    q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
+
 class CompanyForm(forms.ModelForm):
 
     class Meta:
