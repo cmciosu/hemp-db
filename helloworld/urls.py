@@ -13,6 +13,7 @@ urlpatterns = [
     path('companies/', views.companies, name="companies"),
     path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
     path('companies/<int:id>', views.view_company, name='company-view'),
+    path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
 
     # Categories

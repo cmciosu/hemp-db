@@ -8,6 +8,7 @@ from .forms import ProductGroupForm
 from .forms import ProcessingFocusForm
 from .forms import ExtractionTypeForm
 from .forms import UserRegisterForm
+from .forms import SearchForm
 ## Models
 from .models import Company
 from .models import Category
@@ -72,6 +73,7 @@ def register(request):
 ## Companies
 # path('companies/', views.companies, name="companies"),
 # path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
+# path('companies/search/', views.companies_filtered, name='company-filtered'),
 # path('remove_companies/<int:id>', views.remove_companies),
 
 @login_required
@@ -89,8 +91,18 @@ def companies(request):
             return redirect('/companies')  # Redirect to a success page
     else:
         form = CompanyForm()
+        searchForm = SearchForm()
 
-    return render(request, 'companies.html', {'form': form, 'companies': companies})
+    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm})
+
+def companies_filtered(request):
+    form = SearchForm(request.POST)
+    query = form['q']
+    companies = Company.objects.filter(Name__contains=query.value())
+    
+    form = CompanyForm()
+    searchForm = SearchForm()
+    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value()})
 
 def remove_companies(request, id):
     company = Company.objects.get(id = id)
