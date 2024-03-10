@@ -89,6 +89,8 @@ class ExtractionTypesTestCase(TestCase):
 
 class CompanyTestCase(TestCase):
     def setUp(self):
+        Solution.objects.create(solution="testSolution")
+
         Company.objects.create(
             Name="test",
             Industry="test",
@@ -100,7 +102,7 @@ class CompanyTestCase(TestCase):
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.create(solution="testSolution"),
+            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
             stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
@@ -143,7 +145,7 @@ class CompanyTestCase(TestCase):
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.create(solution="testSolution"),
+            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
             stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
@@ -181,4 +183,10 @@ class CompanyTestCase(TestCase):
         c2 = Company.objects.get(Name="test2")
         self.assertTrue(c1)
         self.assertTrue(c2)
+
+    def test_company_persists_on_delete(self):
+        sol = Solution.objects.get(solution="testSolution")
+        c1 = Company.objects.get(Name="test")
+        sol.delete()
+        self.assertTrue(c1)
 
