@@ -1,0 +1,10 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      echo Building hempdb Docker Image
+      docker build -t hempdb .
+      echo Testing and Linting
+      docker run --mount type=bind,source="$(pwd)",target=/code hempdb python manage.py test
+      docker run --mount type=bind,source="$(pwd)",target=/code hempdb ruff check .
