@@ -11,6 +11,7 @@ from .models import Stage
 from .models import ProductGroup
 from .models import ProcessingFocus
 from .models import ExtractionType
+from .models import PendingCompany
 
 class SearchForm(forms.Form):
     q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
@@ -18,7 +19,7 @@ class SearchForm(forms.Form):
 class CompanyForm(forms.ModelForm):
 
     class Meta:
-        model = Company
+        model = PendingCompany
         fields = "__all__"
     
     def __init__(self, *args, **kwargs):

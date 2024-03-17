@@ -13,6 +13,9 @@ urlpatterns = [
     path('companies/', views.companies, name="companies"),
     path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
     path('companies/<int:id>', views.view_company, name='company-view'),
+    path('companies_pending/<int:id>', views.view_company_pending, name='company-view-pending'),
+    path('companies_approve/<int:id>', views.view_company_approve, name='company-pending-approve'),
+    path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
     path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
 
@@ -46,4 +49,7 @@ urlpatterns = [
 
     # User Registration
     path('user/register', views.register),
+
+    # Changes
+    path('changes/', views.dbChanges),
 ]

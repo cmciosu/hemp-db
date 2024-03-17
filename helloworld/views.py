@@ -18,6 +18,7 @@ from .models import Stage
 from .models import ProductGroup
 from .models import ProcessingFocus
 from .models import ExtractionType
+from .models import PendingCompany
 ## Django 
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
@@ -43,12 +44,6 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
-def view_company(request, id):
-    company = Company.objects.get(id = id)
-    # fields = Company._meta.get_fields()
-    obj = model_to_dict(company)
-
-    return render(request, 'company_view.html', {'company': company, 'obj': obj})
   
 ## User Registration
 # path('user/register', views.register),
@@ -73,6 +68,10 @@ def register(request):
 ## Companies
 # path('companies/', views.companies, name="companies"),
 # path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
+# path('companies/<int:id>', views.view_company, name='company-view'),
+# path('companies_pending/<int:id>', views.view_company_pending, name='company-view-pending'),
+# path('companies_approve/<int:id>', views.view_company_approve, name='company-pending-approve'),
+# path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
 # path('companies/search/', views.companies_filtered, name='company-filtered'),
 # path('remove_companies/<int:id>', views.remove_companies),
 
@@ -94,6 +93,39 @@ def companies(request):
         searchForm = SearchForm()
 
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm})
+
+def view_company(request, id):
+    company = Company.objects.get(id = id)
+    # fields = Company._meta.get_fields()
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view.html', {'company': company, 'obj': obj})
+
+def view_company_pending(request, id):
+    company = PendingCompany.objects.get(id = id)
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj})
+
+def view_company_approve(request, id):
+    company = PendingCompany.objects.get(id = id)
+    new_company = Company()
+    for field in company._meta.fields:
+        if not field.primary_key:
+            setattr(new_company, field.name, getattr(company, field.name))
+    new_company.save()
+    company.delete()
+
+    return redirect('/companies')
+
+def view_company_reject(request, id):
+    company = PendingCompany.objects.get(id = id)
+    company.delete()
+
+    return redirect('/changes')
+    
+def company_approve(request, id):
+    return
 
 def companies_filtered(request):
     form = SearchForm(request.POST)
@@ -274,3 +306,12 @@ def remove_extraction_type(request, id):
     _type = ExtractionType.objects.get(id = id)
     _type.delete()
     return redirect('/extraction-types')
+
+## Changes
+# path('changes/', views.changes),
+
+@login_required
+def dbChanges(request):
+    changes = PendingCompany.objects.all()
+    
+    return render(request, 'companies_pending.html', {'companies': changes})
