@@ -1,14 +1,7 @@
 ## Django Testing
 from django.test import TestCase
 ## Models
-from .models import Company
-from .models import Category
-from .models import Solution
-from .models import stakeholderGroups
-from .models import Stage
-from .models import ProductGroup
-from .models import ProcessingFocus
-from .models import ExtractionType
+from .models import *
 
 class CategoryTestCase(TestCase):
     def setUp(self):
