@@ -26,6 +26,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
+from django.http import HttpResponse
+
+import csv
 
 class CompanyListView(ListView):
     model = Company
@@ -85,6 +88,7 @@ def register(request):
 # path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
 # path('companies/search/', views.companies_filtered, name='company-filtered'),
 # path('remove_companies/<int:id>', views.remove_companies),
+# path('export/', views.export_companies, name='export-companies'),
 
 @login_required
 def company_list(request):
@@ -152,6 +156,19 @@ def remove_companies(request, id):
     company = Company.objects.get(id = id)
     company.delete()
     return redirect('/companies')
+
+def export_companies(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="companies.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Company.')[1] for field in Company._meta.fields])
+
+    companies = Company.objects.all().values_list()
+    for company in companies:
+        writer.writerow(company)
+
+    return response
 
 ## Categories
 # path('categories/', views.categories, name="categories"),
