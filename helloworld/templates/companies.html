@@ -20,7 +20,7 @@
   {% if user.is_staff %}
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
-    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+    <a href="{% url 'export-companies' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
     {% endif %}
     
     <div class="btn-group" role="group">
@@ -148,28 +148,6 @@
           </form>
         </div>
   
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-        </div>
-  
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="exportModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Export</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-  
-        <div class="modal-body">
-          <span>Export Method:</span>
-          <span>Format:</span> 
-        </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         </div>

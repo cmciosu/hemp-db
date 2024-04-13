@@ -24,6 +24,7 @@ urlpatterns = [
     path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
     path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
+    path('export/', views.export_companies, name='export-companies'),
 
     # Categories
     path('categories/', views.categories, name="categories"),
