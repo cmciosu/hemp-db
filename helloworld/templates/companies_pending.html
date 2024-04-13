@@ -5,8 +5,7 @@
 {% endblock %}
 
 {% block content %}
-{% load static %}
-<link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
+
 {% if companies.count == 0 %}
   <p style="display: flex; height: 80vh; align-items: center; text-align: center; justify-content: center;">
     No pending changes
