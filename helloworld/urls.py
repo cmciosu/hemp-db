@@ -9,6 +9,12 @@ urlpatterns = [
     # Root
     path("", views.index, name="index"),
 
+    # About
+    path("about/", views.about),
+
+    # Contribute
+    path("contribute/", views.contribute),
+
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
