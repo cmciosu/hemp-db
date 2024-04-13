@@ -5,8 +5,7 @@
 {% endblock %}
 
 {% block content %}
-{% load static %}
-<link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
+
 {% if messages %}
   <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
     {% for message in messages %}
@@ -103,14 +102,14 @@
         <form id="upload_form" method="post" action="/companies/">
 
           {% csrf_token %}
-          <div id="formFieldContainer">
+          <div style="display: block; margin-left: 10px; margin-right: 10px;">
             {% for field in form %}
               {% if field.field.required %}
                 <p>* {{ field.label_tag }}</p>
               {% else %}
                <p> {{ field.label_tag }} </p>
               {% endif %}
-              <p id="formEntryField"> {{ field }} </p>
+              <p> {{ field }} </p>
             {% endfor %}
 
             {% if form.errors %}
@@ -122,8 +121,8 @@
             {% endif %}
           </div>
           <div class="modalFooter">
-            <button type="submit" class="btn btn-danger modalButton" value="Submit">Submit</button>
-            <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
+            <button type="submit" class="btn btn-danger" value="Submit" style="float: right; margin: 5px;">Submit</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" style="float: right; margin: 5px;">Close</button>
           </div>
         </form>
 
