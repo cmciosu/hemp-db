@@ -1,7 +1,24 @@
 ## Forms
-from .forms import *
+from .forms import CompanyForm
+from .forms import CategoryForm
+from .forms import SolutionForm
+from .forms import stakeholderGroupsForm
+from .forms import StageForm
+from .forms import ProductGroupForm
+from .forms import ProcessingFocusForm
+from .forms import ExtractionTypeForm
+from .forms import UserRegisterForm
+from .forms import SearchForm
 ## Models
-from .models import *
+from .models import Company
+from .models import PendingCompany
+from .models import Category
+from .models import Solution
+from .models import stakeholderGroups
+from .models import Stage
+from .models import ProductGroup
+from .models import ProcessingFocus
+from .models import ExtractionType
 ## Django 
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
