@@ -27,6 +27,17 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
+## About
+# path("about/", views.about)
+
+def about(request):
+    return render(request, 'about.html')
+
+## Contribute
+# path("contribute/", views.contribute)
+
+def contribute(request):
+    return render(request, 'contribute.html')
   
 ## User Registration
 # path('user/register', views.register),
