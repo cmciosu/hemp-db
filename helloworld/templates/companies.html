@@ -71,7 +71,7 @@
           <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
           <td>{{ company.Stage.stage }}</td>
           <td>{{ company.productGroup.productGroup }}</td>
-          <td>{{ company.Description }}</td>
+          <td>{{ company.Description|truncatechars:100 }}</td>
           <td>{{ company.Solutions.solution }}</td>
 
 

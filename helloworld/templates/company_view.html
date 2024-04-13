@@ -15,8 +15,12 @@
         <tbody>
             {% for key, val in obj.items %}
             <tr>
-                <td> {{ key }} </td>
-                <td> {{ val }}</td>
+              <td> {{ key }} </td>
+              {% if 'Website' in key %}
+                <td> <a href="{{ val }}" target="_blank">{{ val }} </a></td>
+              {% else %}
+                <td> {{ val }} </td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody> 

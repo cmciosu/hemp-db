@@ -42,8 +42,6 @@
               Hello, {{ user.get_username }}
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Account</a>
-              <a class="dropdown-item" href="#">Settings</a>
               {% if user.is_staff %}
                 <a class="dropdown-item" href="/admin">Admin</a>
               {% endif %}
