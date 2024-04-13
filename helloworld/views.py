@@ -98,6 +98,7 @@ def companies(request):
         form = CompanyForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.info(request, 'Company successfully submitted')
             return redirect('/companies')  # Redirect to a success page
     else:
         form = CompanyForm()
