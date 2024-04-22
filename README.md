@@ -33,4 +33,3 @@ For migrations, run
 1. `docker exec -it hempdb-dev bash`
 2. `python manage.py makemigrations`
 3. `python manage.py migrate`
-
