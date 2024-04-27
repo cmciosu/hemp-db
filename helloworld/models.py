@@ -2,7 +2,7 @@
 from django.db import models
 
 class Solution(models.Model):
-    solution = models.CharField(max_length=250)
+    solution = models.CharField(max_length=1024)
     
     def __str__(self):
         return "Solution: " + self.solution
@@ -11,7 +11,7 @@ class Solution(models.Model):
         db_table = "Solutions"
 
 class Category(models.Model):
-    category = models.CharField(max_length=250)
+    category = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Category: " + self.category
@@ -20,7 +20,7 @@ class Category(models.Model):
         db_table = "Categories"
 
 class stakeholderGroups(models.Model):
-    stakeholderGroup = models.CharField(max_length=250)
+    stakeholderGroup = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Stakeholder Group: " + self.stakeholderGroup
@@ -29,7 +29,7 @@ class stakeholderGroups(models.Model):
         db_table = "Groups"
 
 class Stage(models.Model):
-    stage = models.CharField(max_length=250)
+    stage = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Stage: " + self.stage
@@ -38,7 +38,7 @@ class Stage(models.Model):
         db_table = "Stage"
 
 class ProductGroup(models.Model):
-    productGroup = models.CharField(max_length=250)
+    productGroup = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Product Group: " + self.productGroup
@@ -47,7 +47,7 @@ class ProductGroup(models.Model):
         db_table = "ProductGroup"
 
 class ProcessingFocus(models.Model):
-    processingFocus = models.CharField(max_length=250)
+    processingFocus = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Processing Focus: " + self.processingFocus
@@ -56,7 +56,7 @@ class ProcessingFocus(models.Model):
         db_table = "ProcessingFocus"
 
 class ExtractionType(models.Model):
-    extractionType = models.CharField(max_length=250)
+    extractionType = models.CharField(max_length=1024)
 
     def __str__(self):
         return "Extraction Type: " + self.extractionType
