@@ -11,6 +11,7 @@ from .forms import UserRegisterForm
 from .forms import SearchForm
 ## Models
 from .models import Company
+from .models import PendingCompany
 from .models import Category
 from .models import Solution
 from .models import stakeholderGroups
@@ -25,6 +26,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
+from django.http import HttpResponse
+
+import csv
 
 class CompanyListView(ListView):
     model = Company
@@ -43,12 +47,17 @@ class CompanyCreateView(CreateView):
 def index(request):
     return render(request, 'home.html')
 
-def view_company(request, id):
-    company = Company.objects.get(id = id)
-    # fields = Company._meta.get_fields()
-    obj = model_to_dict(company)
+## About
+# path("about/", views.about)
 
-    return render(request, 'company_view.html', {'company': company, 'obj': obj})
+def about(request):
+    return render(request, 'about.html')
+
+## Contribute
+# path("contribute/", views.contribute)
+
+def contribute(request):
+    return render(request, 'contribute.html')
   
 ## User Registration
 # path('user/register', views.register),
@@ -73,8 +82,13 @@ def register(request):
 ## Companies
 # path('companies/', views.companies, name="companies"),
 # path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
+# path('companies/<int:id>', views.view_company, name='company-view'),
+# path('companies_pending/<int:id>', views.view_company_pending, name='company-view-pending'),
+# path('companies_approve/<int:id>', views.view_company_approve, name='company-pending-approve'),
+# path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
 # path('companies/search/', views.companies_filtered, name='company-filtered'),
 # path('remove_companies/<int:id>', views.remove_companies),
+# path('export/', views.export_companies, name='export-companies'),
 
 @login_required
 def company_list(request):
@@ -88,12 +102,46 @@ def companies(request):
         form = CompanyForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.info(request, 'Company successfully submitted')
             return redirect('/companies')  # Redirect to a success page
     else:
         form = CompanyForm()
         searchForm = SearchForm()
 
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm})
+
+def view_company(request, id):
+    company = Company.objects.get(id = id)
+    # fields = Company._meta.get_fields()
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view.html', {'company': company, 'obj': obj})
+
+def view_company_pending(request, id):
+    company = PendingCompany.objects.get(id = id)
+    obj = model_to_dict(company)
+
+    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj})
+
+def view_company_approve(request, id):
+    company = PendingCompany.objects.get(id = id)
+    new_company = Company()
+    for field in company._meta.fields:
+        if not field.primary_key:
+            setattr(new_company, field.name, getattr(company, field.name))
+    new_company.save()
+    company.delete()
+
+    return redirect('/companies')
+
+def view_company_reject(request, id):
+    company = PendingCompany.objects.get(id = id)
+    company.delete()
+
+    return redirect('/changes')
+    
+def company_approve(request, id):
+    return
 
 def companies_filtered(request):
     form = SearchForm(request.POST)
@@ -108,6 +156,19 @@ def remove_companies(request, id):
     company = Company.objects.get(id = id)
     company.delete()
     return redirect('/companies')
+
+def export_companies(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="companies.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Company.')[1] for field in Company._meta.fields])
+
+    companies = Company.objects.all().values_list()
+    for company in companies:
+        writer.writerow(company)
+
+    return response
 
 ## Categories
 # path('categories/', views.categories, name="categories"),
@@ -274,3 +335,12 @@ def remove_extraction_type(request, id):
     _type = ExtractionType.objects.get(id = id)
     _type.delete()
     return redirect('/extraction-types')
+
+## Changes
+# path('changes/', views.changes),
+
+@login_required
+def dbChanges(request):
+    changes = PendingCompany.objects.all()
+    
+    return render(request, 'companies_pending.html', {'companies': changes})

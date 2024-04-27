@@ -5,14 +5,21 @@
 {% endblock %}
 
 {% block content %}
-{% load static %}
-<link rel="stylesheet" href="{% static 'admin/css/companies.css' %}">
 
-<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+{% if messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
+    {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endif %}
+
+<div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">
   {% if user.is_staff %}
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
-    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+    <a href="{% url 'export-companies' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
     {% endif %}
     
     <div class="btn-group" role="group">
@@ -63,7 +70,7 @@
           <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
           <td>{{ company.Stage.stage }}</td>
           <td>{{ company.productGroup.productGroup }}</td>
-          <td>{{ company.Description }}</td>
+          <td>{{ company.Description|truncatechars:100 }}</td>
           <td>{{ company.Solutions.solution }}</td>
 
 
@@ -88,19 +95,34 @@
           <h4 class="modal-title">Create</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+        <p>
+          * = required
+        </p>
 
         <form id="upload_form" method="post" action="/companies/">
 
           {% csrf_token %}
-          <div id="formFieldContainer">
+          <div style="display: block; margin-left: 10px; margin-right: 10px;">
             {% for field in form %}
-              <p> {{ field.label_tag }} </p>
-              <p id="formEntryField"> {{ field }} </p>
+              {% if field.field.required %}
+                <p>* {{ field.label_tag }}</p>
+              {% else %}
+               <p> {{ field.label_tag }} </p>
+              {% endif %}
+              <p> {{ field }} </p>
             {% endfor %}
+
+            {% if form.errors %}
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <p> {{ error }} </p>
+                {% endfor %}
+              {% endfor %}
+            {% endif %}
           </div>
           <div class="modalFooter">
-            <button type="submit" class="btn btn-danger modalButton" data-bs-dismiss="modal"  value="Submit">Submit</button>
-            <button type="button" class="btn btn-danger modalButton" data-bs-dismiss="modal" >Close</button>
+            <button type="submit" class="btn btn-danger" value="Submit" style="float: right; margin: 5px;">Submit</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" style="float: right; margin: 5px;">Close</button>
           </div>
         </form>
 
@@ -125,28 +147,6 @@
           </form>
         </div>
   
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-        </div>
-  
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="exportModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Export</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-  
-        <div class="modal-body">
-          <span>Export Method:</span>
-          <span>Format:</span> 
-        </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         </div>

@@ -2,6 +2,7 @@
 from django.test import TestCase
 ## Models
 from .models import Company
+from .models import PendingCompany
 from .models import Category
 from .models import Solution
 from .models import stakeholderGroups
@@ -187,6 +188,109 @@ class CompanyTestCase(TestCase):
     def test_company_persists_on_delete(self):
         sol = Solution.objects.get(solution="testSolution")
         c1 = Company.objects.get(Name="test")
+        sol.delete()
+        self.assertTrue(c1)
+
+class PendingCompanyTestCase(TestCase):
+    def setUp(self):
+        Solution.objects.create(solution="testSolution")
+
+        PendingCompany.objects.create(
+            Name="test",
+            Industry="test",
+            Status="test",
+            Info="test",
+            Headquarters="test",
+            Sales="test",
+            Product="test",
+            City="test",
+            State="test",
+            Country="test",
+            Solutions=Solution.objects.get(solution="testSolution"),
+            Website="test",
+            Category=Category.objects.create(category="testCategory"),
+            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
+            Stage=Stage.objects.create(stage="testStage"),
+            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
+            Products="test",
+            sasContact="test",
+            Description="test",
+            pubPriv="test",
+            Ticker="test",
+            Naics="test",
+            Phone="test",
+            Email="test",
+            Stakeholder="test",
+            Principal="test",
+            Founded="test",
+            Employees="test",
+            parentCompany="test",
+            onMarket="test",
+            productName="test",
+            SKU="test",
+            Notes="test",
+            salesRev="test",
+            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            facilitySize="test",
+            biomassCap="test",
+            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            GMP="test",
+            news="test",
+            reviews="test",
+        )
+        PendingCompany.objects.create(
+            Name="test2",
+            Industry="test",
+            Status="test",
+            Info="test",
+            Headquarters="test",
+            Sales="test",
+            Product="test",
+            City="test",
+            State="test",
+            Country="test",
+            Solutions=Solution.objects.get(solution="testSolution"),
+            Website="test",
+            Category=Category.objects.create(category="testCategory"),
+            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
+            Stage=Stage.objects.create(stage="testStage"),
+            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
+            Products="test",
+            sasContact="test",
+            Description="test",
+            pubPriv="test",
+            Ticker="test",
+            Naics="test",
+            Phone="test",
+            Email="test",
+            Stakeholder="test",
+            Principal="test",
+            Founded="test",
+            Employees="test",
+            parentCompany="test",
+            onMarket="test",
+            productName="test",
+            SKU="test",
+            Notes="test",
+            salesRev="test",
+            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            facilitySize="test",
+            biomassCap="test",
+            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            GMP="test",
+            news="test",
+            reviews="test",
+        )
+
+    def test_companies_are_created(self):
+        c1 = PendingCompany.objects.get(Name="test")
+        c2 = PendingCompany.objects.get(Name="test2")
+        self.assertTrue(c1)
+        self.assertTrue(c2)
+
+    def test_company_persists_on_delete(self):
+        sol = Solution.objects.get(solution="testSolution")
+        c1 = PendingCompany.objects.get(Name="test")
         sol.delete()
         self.assertTrue(c1)
 

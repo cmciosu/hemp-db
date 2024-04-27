@@ -1,6 +1,7 @@
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import dj_database_url
 
 load_dotenv()
 
@@ -63,7 +64,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'hempdb.wsgi.application'
+WSGI_APPLICATION = 'hempdb.wsgi.app'
 
 
 # Database
@@ -79,6 +80,11 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+DATABASES['default']['OPTIONS']['charset'] = 'utf8mb4'
+del DATABASES['default']['OPTIONS']['sslmode'] 
+DATABASES['default']['OPTIONS']['ssl'] =  {'ca': os.environ.get('MYSQL_ATTR_SSL_CA')}
 
 
 # Password validation
@@ -117,7 +123,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
