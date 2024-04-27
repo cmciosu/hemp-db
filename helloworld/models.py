@@ -65,11 +65,14 @@ class ExtractionType(models.Model):
         db_table = "ExtractionType"
 
 class Company(models.Model):
+    SrcKey = models.CharField(max_length=255, default=None, blank=True)
     Name = models.CharField(max_length=250)
     Industry = models.CharField(max_length=255)
     Status = models.CharField(max_length=255)
+    Grower = models.CharField(max_length=255, default=None, blank=True)
     Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
+    Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
     Product = models.CharField(max_length=255, blank=True)
     City = models.CharField(max_length=250, blank=True)
@@ -98,7 +101,6 @@ class Company(models.Model):
     productName = models.CharField(max_length=250, blank=True)
     SKU = models.CharField(max_length=250, blank=True)
     Notes = models.CharField(max_length=250, blank=True)
-    salesRev = models.CharField(max_length=250, blank=True)
     processingFocus = models.ForeignKey(ProcessingFocus, on_delete=models.CASCADE)
     facilitySize = models.CharField(max_length=250, blank=True)
     biomassCap = models.CharField(max_length=250, blank=True)
@@ -111,11 +113,14 @@ class Company(models.Model):
         db_table = "Companies"
 
 class PendingCompany(models.Model):
+    SrcKey = models.CharField(max_length=255, default=None, blank=True)
     Name = models.CharField(max_length=250)
     Industry = models.CharField(max_length=255)
     Status = models.CharField(max_length=255)
+    Grower = models.CharField(max_length=255, default=None, blank=True)
     Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
+    Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
     Product = models.CharField(max_length=255, blank=True)
     City = models.CharField(max_length=250, blank=True)
@@ -144,7 +149,6 @@ class PendingCompany(models.Model):
     productName = models.CharField(max_length=250, blank=True)
     SKU = models.CharField(max_length=250, blank=True)
     Notes = models.CharField(max_length=250, blank=True)
-    salesRev = models.CharField(max_length=250, blank=True)
     processingFocus = models.ForeignKey(ProcessingFocus, on_delete=models.CASCADE)
     facilitySize = models.CharField(max_length=250, blank=True)
     biomassCap = models.CharField(max_length=250, blank=True)

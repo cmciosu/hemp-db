@@ -93,6 +93,7 @@ class CompanyTestCase(TestCase):
         Solution.objects.create(solution="testSolution")
 
         Company.objects.create(
+            SrcKey="OSU",
             Name="test",
             Industry="test",
             Status="test",
@@ -100,9 +101,11 @@ class CompanyTestCase(TestCase):
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower="No",
             City="test",
             State="test",
             Country="test",
+            Address="123 Way",
             Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
@@ -126,7 +129,6 @@ class CompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
             processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
             facilitySize="test",
             biomassCap="test",
@@ -136,6 +138,7 @@ class CompanyTestCase(TestCase):
             reviews="test",
         )
         Company.objects.create(
+            SrcKey="OSU",
             Name="test2",
             Industry="test",
             Status="test",
@@ -143,9 +146,11 @@ class CompanyTestCase(TestCase):
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower="No",
             City="test",
             State="test",
             Country="test",
+            Address="123 Way",
             Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
@@ -169,7 +174,6 @@ class CompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
             processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
             facilitySize="test",
             biomassCap="test",
@@ -196,6 +200,7 @@ class PendingCompanyTestCase(TestCase):
         Solution.objects.create(solution="testSolution")
 
         PendingCompany.objects.create(
+            SrcKey="OSU",
             Name="test",
             Industry="test",
             Status="test",
@@ -203,9 +208,11 @@ class PendingCompanyTestCase(TestCase):
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower="No",
             City="test",
             State="test",
             Country="test",
+            Address="123 Way",
             Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
@@ -229,7 +236,6 @@ class PendingCompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
             processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
             facilitySize="test",
             biomassCap="test",
@@ -239,6 +245,7 @@ class PendingCompanyTestCase(TestCase):
             reviews="test",
         )
         PendingCompany.objects.create(
+            SrcKey="OSU",
             Name="test2",
             Industry="test",
             Status="test",
@@ -246,9 +253,11 @@ class PendingCompanyTestCase(TestCase):
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower="No",
             City="test",
             State="test",
             Country="test",
+            Address="123 Way",
             Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
             Category=Category.objects.create(category="testCategory"),
@@ -272,7 +281,6 @@ class PendingCompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
             processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
             facilitySize="test",
             biomassCap="test",
