@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 ## Models
+from .models import Company
 from .models import PendingCompany
 from .models import Category
 from .models import Solution
@@ -16,6 +17,16 @@ class SearchForm(forms.Form):
     q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
 
 class CompanyForm(forms.ModelForm):
+    required_css_class = 'required'
+
+    class Meta:
+        model = Company
+        fields = "__all__"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class PendingCompanyForm(forms.ModelForm):
     required_css_class = 'required'
 
     class Meta:
