@@ -1,5 +1,6 @@
 ## Forms
 from .forms import CompanyForm
+from .forms import PendingCompanyForm
 from .forms import CategoryForm
 from .forms import SolutionForm
 from .forms import stakeholderGroupsForm
@@ -99,16 +100,29 @@ def company_list(request):
 def companies(request):
     companies = Company.objects.all()
     if request.method == 'POST':
-        form = CompanyForm(request.POST)
+        form = PendingCompanyForm(request.POST)
         if form.is_valid():
             form.save()
             messages.info(request, 'Company successfully submitted')
             return redirect('/companies')  # Redirect to a success page
     else:
-        form = CompanyForm()
+        form = PendingCompanyForm()
         searchForm = SearchForm()
 
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm})
+
+@login_required
+def edit_company(request, id):
+    company = Company.objects.get(id = id)
+    form = CompanyForm(request.POST or None, instance=company)
+    if request.POST and form.is_valid():
+        form.save()
+        messages.info(request, 'Company successfully edited')
+        return redirect('/companies')  # Redirect to a success page
+    else: 
+        form = CompanyForm(instance=company)
+
+    return render(request, 'edit_companies.html', {'form': form, 'companies': companies})
 
 def view_company(request, id):
     company = Company.objects.get(id = id)
@@ -148,7 +162,7 @@ def companies_filtered(request):
     query = form['q']
     companies = Company.objects.filter(Name__contains=query.value())
     
-    form = CompanyForm()
+    form = PendingCompanyForm()
     searchForm = SearchForm()
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value()})
 

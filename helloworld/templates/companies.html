@@ -63,7 +63,7 @@
       {% for company in companies %}
         <tr>
           <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
-          <td><a href="{% url 'company-view' company.id%}">{{ company.Name }}</a></td>
+          <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
           <td style="{% if company.Status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status }}</b></td>
           <td>{{ company.Industry }}</td>
           <td>{{ company.Category.category }}</td>
@@ -74,7 +74,7 @@
           <td>{{ company.Solutions.solution }}</td>
 
 
-          <td><button type="button" class="btn btn-secondary">Edit</button></td>
+          <td><a href="{% url 'edit-company' company.id %}" class="btn btn-secondary">Edit</a></td>
           <td><a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
             <!-- Delete -->
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">

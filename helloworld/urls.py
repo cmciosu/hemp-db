@@ -25,6 +25,7 @@ urlpatterns = [
     path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
     path('export/', views.export_companies, name='export-companies'),
+    path('companies/edit/<int:id>', views.edit_company, name='edit-company'),
 
     # Categories
     path('categories/', views.categories, name="categories"),
