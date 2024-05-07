@@ -1,5 +1,4 @@
 ## Forms
-from .forms import CompanyForm
 from .forms import PendingCompanyForm
 from .forms import CategoryForm
 from .forms import SolutionForm

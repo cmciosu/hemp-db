@@ -1,6 +1,6 @@
 # hemp-db
 
-This repository will hosts all code and documentation for the Hemp DB Capstone, CS46X at Oregon State University
+This repository hosts all code for the Hemp DB Capstone Project, CS46X at Oregon State University
 
 ## Local Setup
 
@@ -25,7 +25,7 @@ Note:
 6. Lint with `ruff check .`
 6.a Fix with `ruff check . --fix`
 
-7. Open PR
+7. Open PR to dev
 
 Make sure to add any new dependencies to requirements.txt
 
@@ -33,3 +33,13 @@ For migrations, run
 1. `docker exec -it hempdb-dev bash`
 2. `python manage.py makemigrations`
 3. `python manage.py migrate`
+
+For new env vars, add to .env, .env.example, and vercel
+
+## Deploy to Production
+
+### ⚠️⚠️⚠️ Make sure Debug is set to False ⚠️⚠️⚠️
+
+1. Go to `hempdb/settings.py`, set Debug to False
+2. Go to vercel, make sure build succeeded
+3. Open PR to main
