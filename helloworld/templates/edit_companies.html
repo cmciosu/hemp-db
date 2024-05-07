@@ -21,7 +21,7 @@
   * = required
 </p>
 
-<form id="upload_form" method="post" action="">
+<form id="upload_form" method="post" action="{% url 'edit-company' company.id %}">
 
   {% csrf_token %}
   <div style="display: block; margin-left: 10px; margin-right: 10px;">

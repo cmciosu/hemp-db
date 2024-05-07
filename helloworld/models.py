@@ -159,3 +159,11 @@ class PendingCompany(models.Model):
 
     class Meta:
         db_table = "PendingCompanies"
+
+class PendingChanges(models.Model):
+    companyId = models.CharField(max_length=250)
+    changeType = models.CharField(max_length=250)
+    editId = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        db_table = "PendingChanges"

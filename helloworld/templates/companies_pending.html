@@ -6,7 +6,7 @@
 
 {% block content %}
 
-{% if companies.count == 0 %}
+{% if changes.count == 0 %}
   <p style="display: flex; height: 80vh; align-items: center; text-align: center; justify-content: center;">
     No pending changes
   </p>
@@ -15,33 +15,17 @@
     <thead>
       <tr>
         <th scope="col">   </th>
-        <th scope="col">Company Name</th>
-        <th scope="col">Status</th>
-        <th scope="col">Industry</th>
-        <th scope="col">Stakeholder Category</th>
-        <th scope="col">Stakeholder Group</th>
-        <th scope="col">Stage</th>
-        <th scope="col">Product Group</th>
-        <th scope="col">Description</th>
-        <th scope="col">Solution</th>
+        <th scope="col">Company ID</th>
+        <th scope="col">Change Type</th>
       </tr>
     </thead>
     <tbody>
-      {% for company in companies %}
+      {% for change in changes %}
         <tr>
           <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
-          <td><a href="{% url 'company-view-pending' company.id%}">{{ company.Name }}</a></td>
-          <td style="{% if company.Status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status }}</b></td>
-          <td>{{ company.Industry }}</td>
-          <td>{{ company.Category.category }}</td>
-          <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
-          <td>{{ company.Stage.stage }}</td>
-          <td>{{ company.productGroup.productGroup }}</td>
-          <td>{{ company.Description }}</td>
-          <td>{{ company.Solutions.solution }}</td>
-
-
-          <td><button type="button" class="btn btn-secondary">Edit</button></td>
+          <td><a href="{% url 'company-view-pending' change.changeType change.companyId %}">{{ change.companyId }}</a></td>
+          <td>{{ change.changeType }}</td>
+          <td>{{ change.editId }}</td>
         </tr>
       {% endfor %}
     </tbody>
