@@ -186,9 +186,6 @@ def view_company_reject(_, changeType, id):
     change.delete()
 
     return redirect('/changes')
-    
-def company_approve(request, id):
-    return
 
 def companies_filtered(request):
     form = SearchForm(request.POST)
@@ -199,10 +196,10 @@ def companies_filtered(request):
     searchForm = SearchForm()
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value()})
 
-def remove_companies(_, id):
+def remove_companies(request, id):
     # Add deletion to pending changes
     PendingChanges.objects.create(companyId=id, changeType='deletion')
-
+    messages.info(request, 'Deletion of Company requested')
     return redirect('/companies')
 
 def export_companies(request):
