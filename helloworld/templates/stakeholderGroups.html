@@ -33,6 +33,7 @@
         <th scope="col">   </th>
         <th scope="col">Stakeholder Group ID</th>
         <th scope="col">Stakeholder Group</th>
+        <th scope="col">Category</th>
       </tr>
     </thead>
     <tbody>
@@ -41,6 +42,7 @@
           <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
           <td>{{ group.id }}</td>
           <td>{{ group.stakeholderGroup }}</td>
+          <td>{{ group.category }}</td>
           <td><button type="button" class="btn btn-secondary">Edit</button></td>
           <td><a type="button" class="btn btn-danger" href="/remove_groups/{{ group.id }}"> 
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">

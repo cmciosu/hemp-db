@@ -5,10 +5,11 @@ from .forms import SolutionForm
 from .forms import stakeholderGroupsForm
 from .forms import StageForm
 from .forms import ProductGroupForm
-from .forms import ProcessingFocusForm
-from .forms import ExtractionTypeForm
 from .forms import UserRegisterForm
 from .forms import SearchForm
+from .forms import GrowerForm
+from .forms import IndustryForm
+from .forms import StatusForm
 ## Models
 from .models import Company
 from .models import PendingCompany
@@ -17,9 +18,10 @@ from .models import Solution
 from .models import stakeholderGroups
 from .models import Stage
 from .models import ProductGroup
-from .models import ProcessingFocus
-from .models import ExtractionType
 from .models import PendingChanges
+from .models import Grower
+from .models import Industry
+from .models import Status
 ## Django 
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
@@ -228,7 +230,6 @@ def categories(request):
     categories = Category.objects.all()
     if request.method == 'POST':
         form = CategoryForm(request.POST)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/categories')  # Redirect to a success page
@@ -251,7 +252,6 @@ def solutions(request):
     solutions = Solution.objects.all()
     if request.method == 'POST':
         form = SolutionForm(request.POST)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/solutions')  # Redirect to a success page
@@ -274,7 +274,6 @@ def StakeholderGroups(request):
     groups = stakeholderGroups.objects.all()
     if request.method == 'POST':
         form = stakeholderGroupsForm(request.POST)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/stakeholder-groups')  # Redirect to a success page
@@ -297,7 +296,6 @@ def stages(request):
     stages = Stage.objects.all()
     if request.method == 'POST':
         form = StageForm(request.POST)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/stages')  # Redirect to a success page
@@ -320,7 +318,6 @@ def productGroups(request):
     groups = ProductGroup.objects.all()
     if request.method == 'POST':
         form = ProductGroupForm(request.POST)
-        print(form)
         if form.is_valid():
             form.save()
             return redirect('/product-groups')  # Redirect to a success page
@@ -334,51 +331,86 @@ def remove_product_groups(request, id):
     group.delete()
     return redirect('/product-groups')
 
-## Processing Focus
-# path('processing-focus/', views.processingFocus, name="processingFocus"),
-# path('remove_focus/<int:id>', views.remove_processing_focus),
+## Status
+# path('status/', views.status, name="status"),
+# path('remove_status/<int:id>', views.remove_status),
 
 @login_required
-def processingFocus(request):
-    focus = ProcessingFocus.objects.all()
-    if request.method == 'POST':
-        form = ProcessingFocusForm(request.POST)
-        print(form)
-        if form.is_valid():
-            form.save()
-            return redirect('/processing-focus')  # Redirect to a success page
-    else:
-        form = ProcessingFocusForm()
-
-    return render(request, 'processingFocus.html', {'form': form, 'processingFocus': focus})
-
-def remove_processing_focus(request, id):
-    focus = ProcessingFocus.objects.get(id = id)
-    focus.delete()
-    return redirect('/processing-focus')
-
-## Extraction Type
-# path('extraction-types/', views.extractionTypes, name="extractionTypes"),
-# path('remove_type/<int:id>', views.remove_extraction_type),
+def status_list(request):
+    status = Status.objects.all()
+    return render(request, 'status.html', {'status': status})
 
 @login_required
-def extractionTypes(request):
-    types = ExtractionType.objects.all()
+def status(request):
+    status = Status.objects.all()
     if request.method == 'POST':
-        form = ExtractionTypeForm(request.POST)
-        print(form)
+        form = StatusForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/extraction-types')  # Redirect to a success page
+            return redirect('/status')  # Redirect to a success page
     else:
-        form = ExtractionTypeForm()
+        form = StatusForm()
 
-    return render(request, 'extractionTypes.html', {'form': form, 'types': types})
+    return render(request, 'status.html', {'form': form, 'status': status})
 
-def remove_extraction_type(request, id):
-    _type = ExtractionType.objects.get(id = id)
-    _type.delete()
-    return redirect('/extraction-types')
+def remove_status(_, id):
+    status = Status.objects.get(id = id)
+    status.delete()
+    return redirect('/status')
+
+## Grower
+# path('grower/', views.grower, name="grower"),
+# path('remove_grower/<int:id>', views.remove_grower),
+
+@login_required
+def grower_list(request):
+    growers = Grower.objects.all()
+    return render(request, 'grower.html', {'growers': growers})
+
+@login_required
+def grower(request):
+    growers = Grower.objects.all()
+    if request.method == 'POST':
+        form = GrowerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/grower')  # Redirect to a success page
+    else:
+        form = GrowerForm()
+
+    return render(request, 'grower.html', {'form': form, 'growers': growers})
+
+def remove_grower(_, id):
+    grower = Grower.objects.get(id = id)
+    grower.delete()
+    return redirect('/grower')
+
+## Industry
+# path('industry/', views.industry, name="industry"),
+# path('remove_industry/<int:id>', views.remove_industry),
+
+@login_required
+def industry_list(request):
+    industries = Industry.objects.all()
+    return render(request, 'industry.html', {'industries': industries})
+
+@login_required
+def industry(request):
+    industries = Industry.objects.all()
+    if request.method == 'POST':
+        form = IndustryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/industry')  # Redirect to a success page
+    else:
+        form = IndustryForm()
+
+    return render(request, 'industry.html', {'form': form, 'industries': industries})
+
+def remove_industry(_, id):
+    industry = Industry.objects.get(id = id)
+    industry.delete()
+    return redirect('/industry')
 
 ## Changes
 # path('changes/', views.changes),

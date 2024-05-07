@@ -47,14 +47,18 @@ urlpatterns = [
     path('product-groups/', views.productGroups, name="productGroups"),
     path('remove_product_group/<int:id>', views.remove_product_groups),
 
-    # Processing Focus
-    path('processing-focus/', views.processingFocus, name="processingFocus"),
-    path('remove_focus/<int:id>', views.remove_processing_focus),
+    # Status
+    path('status/', views.status, name="status"),
+    path('remove_status/<int:id>', views.remove_status),
 
-    # Extraction Type
-    path('extraction-types/', views.extractionTypes, name="extractionTypes"),
-    path('remove_type/<int:id>', views.remove_extraction_type),
+    # Grower
+    path('grower/', views.grower, name="grower"),
+    path('remove_grower/<int:id>', views.remove_grower),
 
+    # Industry
+    path('industry/', views.industry, name="industry"),
+    path('remove_industry/<int:id>', views.remove_industry),
+    
     # User Registration
     path('user/register', views.register),
 

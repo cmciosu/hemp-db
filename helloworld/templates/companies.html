@@ -103,6 +103,11 @@
 
           {% csrf_token %}
           <div style="display: block; margin-left: 10px; margin-right: 10px;">
+            <style>
+              ul {
+                list-style-type: none;
+              }
+            </style>
             {% for field in form %}
               {% if field.field.required %}
                 <p>* {{ field.label_tag }}</p>
