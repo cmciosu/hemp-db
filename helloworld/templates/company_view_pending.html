@@ -14,10 +14,22 @@
     <a type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="{% url 'company-pending-reject' changeType company.id%}"> Reject </a>
     <table class="table table-striped table-sm">
         <tbody>
-            {% for key, val in obj.items %}
+          {% for key, val in obj.items %}
             <tr>
-                <td> {{ key }} </td>
-                <td> {{ val }}</td>
+              <td> {{ key }} </td>
+              {% if 'Website' in key %}
+                <td> <a href="{{ val }}" target="_blank">{{ val }} </a></td>
+              {% else %}
+                {% if 'Solutions' in key %}
+                  <td>
+                    {% for solution in company.Solutions.all %}
+                      <li style="display: flex; gap: 5; list-style-type: none;">{{ solution }}</li>
+                    {% endfor %}
+                  </td>
+                {% else %}
+                  <td> {{ val }} </td>
+                {% endif %}
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody> 

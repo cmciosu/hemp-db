@@ -19,7 +19,15 @@
               {% if 'Website' in key %}
                 <td> <a href="{{ val }}" target="_blank">{{ val }} </a></td>
               {% else %}
-                <td> {{ val }} </td>
+                {% if 'Solutions' in key %}
+                  <td>
+                    {% for solution in company.Solutions.all %}
+                      <li style="display: flex; gap: 5; list-style-type: none;">{{ solution }}</li>
+                    {% endfor %}
+                  </td>
+                {% else %}
+                  <td> {{ val }} </td>
+                {% endif %}
               {% endif %}
             </tr>
           {% endfor %}

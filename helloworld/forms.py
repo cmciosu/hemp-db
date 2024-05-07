@@ -28,6 +28,10 @@ class CompanyForm(forms.ModelForm):
 
 class PendingCompanyForm(forms.ModelForm):
     required_css_class = 'required'
+    Solutions = forms.ModelMultipleChoiceField(
+            queryset=Solution.objects.all(),
+            widget=forms.CheckboxSelectMultiple,
+            required=True)
 
     class Meta:
         model = PendingCompany
