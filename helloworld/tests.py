@@ -96,7 +96,7 @@ class IndustryTestCase(TestCase):
 
     def test_industries_are_created(self):
         c1 = Industry.objects.get(industry="testIndustry")
-        c2 = Industry.objects.get(cwa="anotherTestIndustry")
+        c2 = Industry.objects.get(industry="anotherTestIndustry")
         self.assertTrue(c1)
         self.assertTrue(c2)
 
