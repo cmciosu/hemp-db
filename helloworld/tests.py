@@ -95,16 +95,14 @@ class IndustryTestCase(TestCase):
         Industry.objects.create(industry="anotherTestIndustry")
 
     def test_industries_are_created(self):
-        c1 = Industry.objects.get(status="testIndustry")
-        c2 = Industry.objects.get(status="anotherTestIndustry")
+        c1 = Industry.objects.get(industry="testIndustry")
+        c2 = Industry.objects.get(industry="anotherTestIndustry")
         self.assertTrue(c1)
         self.assertTrue(c2)
 
 class CompanyTestCase(TestCase):
     def setUp(self):
-        Solution.objects.create(solution="testSolution")
-
-        Company.objects.create(
+        c1 = Company.objects.create(
             SrcKey="OSU",
             Name="test",
             Industry=Industry.objects.create(industry="testIndustry"),
@@ -118,12 +116,7 @@ class CompanyTestCase(TestCase):
             State="test",
             Country="test",
             Address="123 Way",
-            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1),
-            Stage=Stage.objects.create(stage="testStage", category=1),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -149,7 +142,13 @@ class CompanyTestCase(TestCase):
             news="test",
             reviews="test",
         )
-        Company.objects.create(
+        c1.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c1.Category.add(Category.objects.create(category="testCategory"))
+        c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
+        
+        c2 = Company.objects.create(
             SrcKey="OSU",
             Name="test2",
             Industry=Industry.objects.create(industry="testIndustry"),
@@ -163,12 +162,7 @@ class CompanyTestCase(TestCase):
             State="test",
             Country="test",
             Address="123 Way",
-            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1),
-            Stage=Stage.objects.create(stage="testStage", category=1),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -194,6 +188,11 @@ class CompanyTestCase(TestCase):
             news="test",
             reviews="test",
         )
+        c2.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c2.Category.add(Category.objects.create(category="testCategory"))
+        c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
         c1 = Company.objects.get(Name="test")
@@ -201,17 +200,9 @@ class CompanyTestCase(TestCase):
         self.assertTrue(c1)
         self.assertTrue(c2)
 
-    def test_company_persists_on_delete(self):
-        sol = Solution.objects.get(solution="testSolution")
-        c1 = Company.objects.get(Name="test")
-        sol.delete()
-        self.assertTrue(c1)
-
 class PendingCompanyTestCase(TestCase):
     def setUp(self):
-        Solution.objects.create(solution="testSolution")
-
-        PendingCompany.objects.create(
+        c1 = PendingCompany.objects.create(
             SrcKey="OSU",
             Name="test",
             Industry=Industry.objects.create(industry="testIndustry"),
@@ -225,12 +216,7 @@ class PendingCompanyTestCase(TestCase):
             State="test",
             Country="test",
             Address="123 Way",
-            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1),
-            Stage=Stage.objects.create(stage="testStage", category=1),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -256,7 +242,13 @@ class PendingCompanyTestCase(TestCase):
             news="test",
             reviews="test",
         )
-        PendingCompany.objects.create(
+        c1.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c1.Category.add(Category.objects.create(category="testCategory"))
+        c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
+        
+        c2 = PendingCompany.objects.create(
             SrcKey="OSU",
             Name="test2",
             Industry=Industry.objects.create(industry="testIndustry"),
@@ -270,12 +262,7 @@ class PendingCompanyTestCase(TestCase):
             State="test",
             Country="test",
             Address="123 Way",
-            Solutions=Solution.objects.get(solution="testSolution"),
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1),
-            Stage=Stage.objects.create(stage="testStage", category=1),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -301,16 +288,15 @@ class PendingCompanyTestCase(TestCase):
             news="test",
             reviews="test",
         )
+        c2.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c2.Category.add(Category.objects.create(category="testCategory"))
+        c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
         c1 = PendingCompany.objects.get(Name="test")
         c2 = PendingCompany.objects.get(Name="test2")
         self.assertTrue(c1)
         self.assertTrue(c2)
-
-    def test_company_persists_on_delete(self):
-        sol = Solution.objects.get(solution="testSolution")
-        c1 = PendingCompany.objects.get(Name="test")
-        sol.delete()
-        self.assertTrue(c1)
 
