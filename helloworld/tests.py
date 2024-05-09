@@ -8,8 +8,9 @@ from .models import Solution
 from .models import stakeholderGroups
 from .models import Stage
 from .models import ProductGroup
-from .models import ProcessingFocus
-from .models import ExtractionType
+from .models import Grower
+from .models import Industry
+from .models import Status
 
 class CategoryTestCase(TestCase):
     def setUp(self):
@@ -35,8 +36,8 @@ class SolutionTestCase(TestCase):
 
 class StakeholderGroupsTestCase(TestCase):
     def setUp(self):
-        stakeholderGroups.objects.create(stakeholderGroup="testGroup")
-        stakeholderGroups.objects.create(stakeholderGroup="anotherTestGroup")
+        stakeholderGroups.objects.create(stakeholderGroup="testGroup", category=1)
+        stakeholderGroups.objects.create(stakeholderGroup="anotherTestGroup", category=1)
 
     def test_groups_are_created(self):
         c1 = stakeholderGroups.objects.get(stakeholderGroup="testGroup")
@@ -46,8 +47,8 @@ class StakeholderGroupsTestCase(TestCase):
 
 class StagesTestCase(TestCase):
     def setUp(self):
-        Stage.objects.create(stage="testStage")
-        Stage.objects.create(stage="anotherTestStage")
+        Stage.objects.create(stage="testStage", category=1)
+        Stage.objects.create(stage="anotherTestStage", category=2)
 
     def test_stages_are_created(self):
         c1 = Stage.objects.get(stage="testStage")
@@ -66,49 +67,56 @@ class ProductGroupTestCase(TestCase):
         self.assertTrue(c1)
         self.assertTrue(c2)
 
-class ProcessingFocusTestCase(TestCase):
+class GrowerTestCase(TestCase):
     def setUp(self):
-        ProcessingFocus.objects.create(processingFocus="testProcessingFocus")
-        ProcessingFocus.objects.create(processingFocus="anotherTestProcessingFocus")
+        Grower.objects.create(grower="testGrower")
+        Grower.objects.create(grower="anotherTestGrower")
 
-    def test_processing_focus_are_created(self):
-        c1 = ProcessingFocus.objects.get(processingFocus="testProcessingFocus")
-        c2 = ProcessingFocus.objects.get(processingFocus="anotherTestProcessingFocus")
+    def test_growers_are_created(self):
+        c1 = Grower.objects.get(grower="testGrower")
+        c2 = Grower.objects.get(grower="anotherTestGrower")
         self.assertTrue(c1)
         self.assertTrue(c2)
 
-class ExtractionTypesTestCase(TestCase):
+class StatusTestCase(TestCase):
     def setUp(self):
-        ExtractionType.objects.create(extractionType="testExtractionType")
-        ExtractionType.objects.create(extractionType="anotherTestExtractionType")
+        Status.objects.create(status="testStatus")
+        Status.objects.create(status="anotherTestStatus")
 
-    def test_extraction_types_are_created(self):
-        c1 = ExtractionType.objects.get(extractionType="testExtractionType")
-        c2 = ExtractionType.objects.get(extractionType="anotherTestExtractionType")
+    def test_status_are_created(self):
+        c1 = Status.objects.get(status="testStatus")
+        c2 = Status.objects.get(status="anotherTestStatus")
+        self.assertTrue(c1)
+        self.assertTrue(c2)
+
+class IndustryTestCase(TestCase):
+    def setUp(self):
+        Industry.objects.create(industry="testIndustry")
+        Industry.objects.create(industry="anotherTestIndustry")
+
+    def test_industries_are_created(self):
+        c1 = Industry.objects.get(industry="testIndustry")
+        c2 = Industry.objects.get(industry="anotherTestIndustry")
         self.assertTrue(c1)
         self.assertTrue(c2)
 
 class CompanyTestCase(TestCase):
     def setUp(self):
-        Solution.objects.create(solution="testSolution")
-
-        Company.objects.create(
+        c1 = Company.objects.create(
+            SrcKey="OSU",
             Name="test",
-            Industry="test",
-            Status="test",
+            Industry=Industry.objects.create(industry="testIndustry"),
+            Status=Status.objects.create(status="testStatus"),
             Info="test",
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower=Grower.objects.create(grower="testGrower"),
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.get(solution="testSolution"),
+            Address="123 Way",
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
-            Stage=Stage.objects.create(stage="testStage"),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -126,32 +134,35 @@ class CompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
-            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            processingFocus="test",
             facilitySize="test",
             biomassCap="test",
-            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            extractionType="test",
             GMP="test",
             news="test",
             reviews="test",
         )
-        Company.objects.create(
+        c1.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c1.Category.add(Category.objects.create(category="testCategory"))
+        c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
+        
+        c2 = Company.objects.create(
+            SrcKey="OSU",
             Name="test2",
-            Industry="test",
-            Status="test",
+            Industry=Industry.objects.create(industry="testIndustry"),
+            Status=Status.objects.create(status="testStatus"),
             Info="test",
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower=Grower.objects.create(grower="testGrower"),
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.get(solution="testSolution"),
+            Address="123 Way",
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
-            Stage=Stage.objects.create(stage="testStage"),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -169,15 +180,19 @@ class CompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
-            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            processingFocus="test",
             facilitySize="test",
             biomassCap="test",
-            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            extractionType="test",
             GMP="test",
             news="test",
             reviews="test",
         )
+        c2.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c2.Category.add(Category.objects.create(category="testCategory"))
+        c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
         c1 = Company.objects.get(Name="test")
@@ -185,33 +200,23 @@ class CompanyTestCase(TestCase):
         self.assertTrue(c1)
         self.assertTrue(c2)
 
-    def test_company_persists_on_delete(self):
-        sol = Solution.objects.get(solution="testSolution")
-        c1 = Company.objects.get(Name="test")
-        sol.delete()
-        self.assertTrue(c1)
-
 class PendingCompanyTestCase(TestCase):
     def setUp(self):
-        Solution.objects.create(solution="testSolution")
-
-        PendingCompany.objects.create(
+        c1 = PendingCompany.objects.create(
+            SrcKey="OSU",
             Name="test",
-            Industry="test",
-            Status="test",
+            Industry=Industry.objects.create(industry="testIndustry"),
+            Status=Status.objects.create(status="testStatus"),
             Info="test",
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower=Grower.objects.create(grower="testGrower"),
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.get(solution="testSolution"),
+            Address="123 Way",
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
-            Stage=Stage.objects.create(stage="testStage"),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -229,32 +234,35 @@ class PendingCompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
-            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            processingFocus="test",
             facilitySize="test",
             biomassCap="test",
-            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            extractionType="test",
             GMP="test",
             news="test",
             reviews="test",
         )
-        PendingCompany.objects.create(
+        c1.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c1.Category.add(Category.objects.create(category="testCategory"))
+        c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
+        
+        c2 = PendingCompany.objects.create(
+            SrcKey="OSU",
             Name="test2",
-            Industry="test",
-            Status="test",
+            Industry=Industry.objects.create(industry="testIndustry"),
+            Status=Status.objects.create(status="testStatus"),
             Info="test",
             Headquarters="test",
             Sales="test",
             Product="test",
+            Grower=Grower.objects.create(grower="testGrower"),
             City="test",
             State="test",
             Country="test",
-            Solutions=Solution.objects.get(solution="testSolution"),
+            Address="123 Way",
             Website="test",
-            Category=Category.objects.create(category="testCategory"),
-            stakeholderGroup=stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup"),
-            Stage=Stage.objects.create(stage="testStage"),
-            productGroup=ProductGroup.objects.create(productGroup="testProductGroup"),
             Products="test",
             sasContact="test",
             Description="test",
@@ -272,25 +280,23 @@ class PendingCompanyTestCase(TestCase):
             productName="test",
             SKU="test",
             Notes="test",
-            salesRev="test",
-            processingFocus=ProcessingFocus.objects.create(processingFocus="testProcessingFocus"),
+            processingFocus="test",
             facilitySize="test",
             biomassCap="test",
-            extractionType=ExtractionType.objects.create(extractionType="testExtractionType"),
+            extractionType="test",
             GMP="test",
             news="test",
             reviews="test",
         )
+        c2.Solutions.add(Solution.objects.create(solution="testSolution"))
+        c2.Category.add(Category.objects.create(category="testCategory"))
+        c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
         c1 = PendingCompany.objects.get(Name="test")
         c2 = PendingCompany.objects.get(Name="test2")
         self.assertTrue(c1)
         self.assertTrue(c2)
-
-    def test_company_persists_on_delete(self):
-        sol = Solution.objects.get(solution="testSolution")
-        c1 = PendingCompany.objects.get(Name="test")
-        sol.delete()
-        self.assertTrue(c1)
 

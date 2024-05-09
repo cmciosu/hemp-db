@@ -2,85 +2,99 @@
 from django.db import models
 
 class Solution(models.Model):
-    solution = models.CharField(max_length=250)
+    solution = models.CharField(max_length=1024)
     
     def __str__(self):
-        return "Solution: " + self.solution
+        return self.solution
 
     class Meta:
         db_table = "Solutions"
 
 class Category(models.Model):
-    category = models.CharField(max_length=250)
+    category = models.CharField(max_length=1024)
 
     def __str__(self):
-        return "Category: " + self.category
+        return self.category
 
     class Meta:
         db_table = "Categories"
 
 class stakeholderGroups(models.Model):
-    stakeholderGroup = models.CharField(max_length=250)
+    stakeholderGroup = models.CharField(max_length=1024)
+    category = models.IntegerField()
 
     def __str__(self):
-        return "Stakeholder Group: " + self.stakeholderGroup
+        return self.stakeholderGroup
     
     class Meta:
         db_table = "Groups"
 
 class Stage(models.Model):
-    stage = models.CharField(max_length=250)
+    stage = models.CharField(max_length=1024)
+    category = models.IntegerField()
 
     def __str__(self):
-        return "Stage: " + self.stage
+        return self.stage
 
     class Meta:
         db_table = "Stage"
 
 class ProductGroup(models.Model):
-    productGroup = models.CharField(max_length=250)
+    productGroup = models.CharField(max_length=1024)
 
     def __str__(self):
-        return "Product Group: " + self.productGroup
+        return self.productGroup
 
     class Meta:
         db_table = "ProductGroup"
 
-class ProcessingFocus(models.Model):
-    processingFocus = models.CharField(max_length=250)
+class Status(models.Model):
+    status = models.CharField(max_length=250)
 
     def __str__(self):
-        return "Processing Focus: " + self.processingFocus
+        return "Status: " + self.status
 
     class Meta:
-        db_table = "ProcessingFocus"
+        db_table = "Status"
 
-class ExtractionType(models.Model):
-    extractionType = models.CharField(max_length=250)
+class Industry(models.Model):
+    industry = models.CharField(max_length=250)
 
     def __str__(self):
-        return "Extraction Type: " + self.extractionType
+        return "Industry: " + self.industry
 
     class Meta:
-        db_table = "ExtractionType"
+        db_table = "Industry"
+
+class Grower(models.Model):
+    grower = models.CharField(max_length=250)
+
+    def __str__(self):
+        return "Grower: " + self.grower
+
+    class Meta:
+        db_table = "Grower"
 
 class Company(models.Model):
+    SrcKey = models.CharField(max_length=255, default=None, blank=True)
     Name = models.CharField(max_length=250)
-    Industry = models.CharField(max_length=255)
-    Status = models.CharField(max_length=255)
+    Industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
+    Status = models.ForeignKey(Status, on_delete=models.CASCADE)
+    Grower = models.ForeignKey(Grower, on_delete=models.CASCADE)
     Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
+    Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
     Product = models.CharField(max_length=255, blank=True)
     City = models.CharField(max_length=250, blank=True)
     State = models.CharField(max_length=250, blank=True)
     Country = models.CharField(max_length=250)
-    Solutions = models.ForeignKey(Solution, on_delete=models.CASCADE)
+    Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=250, blank=True)
-    Category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    stakeholderGroup = models.ForeignKey(stakeholderGroups, on_delete=models.CASCADE)
-    Stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
-    productGroup = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
+    Category = models.ManyToManyField(Category, blank=True)
+    stakeholderGroup = models.ManyToManyField(stakeholderGroups, blank=True)
+    Stage = models.ManyToManyField(Stage, blank=True)
+    productGroup = models.ManyToManyField(ProductGroup, blank=True)
     Products = models.CharField(max_length=250, blank=True)
     sasContact = models.CharField(max_length=250, blank=True)
     Description = models.CharField(max_length=250, blank=True)
@@ -98,11 +112,10 @@ class Company(models.Model):
     productName = models.CharField(max_length=250, blank=True)
     SKU = models.CharField(max_length=250, blank=True)
     Notes = models.CharField(max_length=250, blank=True)
-    salesRev = models.CharField(max_length=250, blank=True)
-    processingFocus = models.ForeignKey(ProcessingFocus, on_delete=models.CASCADE)
+    processingFocus = models.CharField(max_length=1024, blank=True)
     facilitySize = models.CharField(max_length=250, blank=True)
     biomassCap = models.CharField(max_length=250, blank=True)
-    extractionType = models.ForeignKey(ExtractionType, on_delete=models.CASCADE)
+    extractionType = models.CharField(max_length=1024, blank=True)
     GMP = models.CharField(max_length=250, blank=True)
     news = models.CharField(max_length=250, blank=True)
     reviews = models.CharField(max_length=250, blank=True)
@@ -111,22 +124,25 @@ class Company(models.Model):
         db_table = "Companies"
 
 class PendingCompany(models.Model):
+    SrcKey = models.CharField(max_length=255, default=None, blank=True)
     Name = models.CharField(max_length=250)
-    Industry = models.CharField(max_length=255)
-    Status = models.CharField(max_length=255)
+    Industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
+    Status = models.ForeignKey(Status, on_delete=models.CASCADE)
+    Grower = models.ForeignKey(Grower, on_delete=models.CASCADE)
     Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
+    Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
     Product = models.CharField(max_length=255, blank=True)
     City = models.CharField(max_length=250, blank=True)
     State = models.CharField(max_length=250, blank=True)
     Country = models.CharField(max_length=250)
-    Solutions = models.ForeignKey(Solution, on_delete=models.CASCADE)
+    Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=250, blank=True)
-    Category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    stakeholderGroup = models.ForeignKey(stakeholderGroups, on_delete=models.CASCADE)
-    Stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
-    productGroup = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
+    Category = models.ManyToManyField(Category, blank=True)
+    stakeholderGroup = models.ManyToManyField(stakeholderGroups, blank=True)
+    Stage = models.ManyToManyField(Stage, blank=True)
+    productGroup = models.ManyToManyField(ProductGroup, blank=True)
     Products = models.CharField(max_length=250, blank=True)
     sasContact = models.CharField(max_length=250, blank=True)
     Description = models.CharField(max_length=250, blank=True)
@@ -144,14 +160,21 @@ class PendingCompany(models.Model):
     productName = models.CharField(max_length=250, blank=True)
     SKU = models.CharField(max_length=250, blank=True)
     Notes = models.CharField(max_length=250, blank=True)
-    salesRev = models.CharField(max_length=250, blank=True)
-    processingFocus = models.ForeignKey(ProcessingFocus, on_delete=models.CASCADE)
+    processingFocus = models.CharField(max_length=1024, blank=True)
     facilitySize = models.CharField(max_length=250, blank=True)
     biomassCap = models.CharField(max_length=250, blank=True)
-    extractionType = models.ForeignKey(ExtractionType, on_delete=models.CASCADE)
+    extractionType = models.CharField(max_length=1024, blank=True)
     GMP = models.CharField(max_length=250, blank=True)
     news = models.CharField(max_length=250, blank=True)
     reviews = models.CharField(max_length=250, blank=True)
 
     class Meta:
         db_table = "PendingCompanies"
+
+class PendingChanges(models.Model):
+    companyId = models.CharField(max_length=250)
+    changeType = models.CharField(max_length=250)
+    editId = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        db_table = "PendingChanges"
