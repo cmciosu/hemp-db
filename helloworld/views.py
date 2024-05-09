@@ -184,6 +184,9 @@ def view_company_approve(_, changeType, id):
 
 def view_company_reject(_, changeType, id):
     change = PendingChanges.objects.get(companyId = id, changeType = changeType)
+    if changeType == 'create' or changeType == 'edit':
+        company = PendingCompany.objects.get(id=id)
+        company.delete()
     change.delete()
 
     return redirect('/changes')
