@@ -81,7 +81,6 @@ class Company(models.Model):
     Industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
     Status = models.ForeignKey(Status, on_delete=models.CASCADE)
     Grower = models.ForeignKey(Grower, on_delete=models.CASCADE)
-    Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
     Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
@@ -95,9 +94,9 @@ class Company(models.Model):
     stakeholderGroup = models.ManyToManyField(stakeholderGroups, blank=True)
     Stage = models.ManyToManyField(Stage, blank=True)
     productGroup = models.ManyToManyField(ProductGroup, blank=True)
-    Products = models.CharField(max_length=250, blank=True)
+    Products = models.CharField(max_length=512, blank=True)
     sasContact = models.CharField(max_length=250, blank=True)
-    Description = models.CharField(max_length=250, blank=True)
+    Description = models.CharField(max_length=1024, blank=True)
     pubPriv = models.CharField(max_length=250, blank=True)
     Ticker = models.CharField(max_length=250, blank=True)
     Naics = models.CharField(max_length=250, blank=True)
@@ -117,8 +116,8 @@ class Company(models.Model):
     biomassCap = models.CharField(max_length=250, blank=True)
     extractionType = models.CharField(max_length=1024, blank=True)
     GMP = models.CharField(max_length=250, blank=True)
-    news = models.CharField(max_length=250, blank=True)
-    reviews = models.CharField(max_length=250, blank=True)
+    news = models.CharField(max_length=1024, blank=True)
+    reviews = models.CharField(max_length=512, blank=True)
 
     class Meta:
         db_table = "Companies"
@@ -129,7 +128,6 @@ class PendingCompany(models.Model):
     Industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
     Status = models.ForeignKey(Status, on_delete=models.CASCADE)
     Grower = models.ForeignKey(Grower, on_delete=models.CASCADE)
-    Info = models.CharField(max_length=255)
     Headquarters = models.CharField(max_length=255, blank=True)
     Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
@@ -145,7 +143,7 @@ class PendingCompany(models.Model):
     productGroup = models.ManyToManyField(ProductGroup, blank=True)
     Products = models.CharField(max_length=250, blank=True)
     sasContact = models.CharField(max_length=250, blank=True)
-    Description = models.CharField(max_length=250, blank=True)
+    Description = models.CharField(max_length=1024, blank=True)
     pubPriv = models.CharField(max_length=250, blank=True)
     Ticker = models.CharField(max_length=250, blank=True)
     Naics = models.CharField(max_length=250, blank=True)
@@ -165,8 +163,8 @@ class PendingCompany(models.Model):
     biomassCap = models.CharField(max_length=250, blank=True)
     extractionType = models.CharField(max_length=1024, blank=True)
     GMP = models.CharField(max_length=250, blank=True)
-    news = models.CharField(max_length=250, blank=True)
-    reviews = models.CharField(max_length=250, blank=True)
+    news = models.CharField(max_length=1024, blank=True)
+    reviews = models.CharField(max_length=512, blank=True)
 
     class Meta:
         db_table = "PendingCompanies"
