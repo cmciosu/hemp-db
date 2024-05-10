@@ -35,6 +35,9 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
     - name: Lint
       run: |
         ruff check .
