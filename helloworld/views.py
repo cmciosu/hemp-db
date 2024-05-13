@@ -100,7 +100,13 @@ def company_list(request):
 
 @login_required
 def companies(request):
-    companies = Company.objects.all()
+    page = int(request.GET.get('page', 1))
+    if page < 1: 
+        lower = 0
+        upper = 50
+    lower = page * 50 - 50
+    upper = lower + 50
+    companies = Company.objects.all()[lower:upper]
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
@@ -112,7 +118,7 @@ def companies(request):
         form = PendingCompanyForm()
         searchForm = SearchForm()
 
-    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm})
+    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'page': page})
 
 @login_required
 def edit_company(request, id):
@@ -192,13 +198,28 @@ def view_company_reject(_, changeType, id):
     return redirect('/changes')
 
 def companies_filtered(request):
-    form = SearchForm(request.POST)
-    query = form['q']
-    companies = Company.objects.filter(Name__contains=query.value())
+    page = int(request.GET.get('page', 1))
+    if page < 1: 
+        lower = 0
+        upper = 50
+    lower = page * 50 - 50
+    upper = lower + 50
+    query = request.GET.get('query', '')
+    # If query provided as url parameter, use that
+    if query != '':
+        companies = Company.objects.filter(Name__contains=query)[lower:upper]
+        form = PendingCompanyForm()
+        searchForm = SearchForm()
+        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page': page})
+    # else if query provided by form submission, use that
+    else:
+        form = SearchForm(request.POST)
+        query = form['q']
+        companies = Company.objects.filter(Name__contains=query.value())[lower:upper]
     
     form = PendingCompanyForm()
     searchForm = SearchForm()
-    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value()})
+    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value(), 'page': page})
 
 def remove_companies(request, id):
     # Add deletion to pending changes
