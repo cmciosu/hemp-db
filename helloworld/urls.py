@@ -24,41 +24,49 @@ urlpatterns = [
     path('companies_reject/<str:changeType>/<int:id>', views.view_company_reject, name='company-pending-reject'),
     path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
-    path('export/', views.export_companies, name='export-companies'),
+    path('export_companies/', views.export_companies, name='export-companies'),
     path('companies/edit/<int:id>', views.edit_company, name='edit-company'),
 
     # Categories
     path('categories/', views.categories, name="categories"),
     path('remove_categories/<int:id>', views.remove_categories),
+    path('export_categories/', views.export_categories, name='export-categories'),
 
     # Solutions 
     path('solutions/', views.solutions, name="solutions"),
     path('remove_solutions/<int:id>', views.remove_solutions),
+    path('export_solutions/', views.export_solutions, name='export-solutions'),
 
     # Stakeholder Groups
     path('stakeholder-groups/', views.StakeholderGroups, name="StakeholderGroups"),
-    path('remove_groups/<int:id>', views.remove_stakeholder_groups),
+    path('remove_stakeholder_groups/<int:id>', views.remove_stakeholder_groups),
+    path('export_stakeholder_groups/', views.export_stakeholder_groups, name='export-stakeholder_groups'),
 
     # Stage
     path('stages/', views.stages, name="stages"),
     path('remove_stages/<int:id>', views.remove_stages),
+    path('export_stages/', views.export_stages, name='export-stages'),
 
     # Product Group
     path('product-groups/', views.productGroups, name="productGroups"),
     path('remove_product_group/<int:id>', views.remove_product_groups),
+    path('export_product_groups/', views.export_product_groups, name='export-product_groups'),
 
     # Status
     path('status/', views.status, name="status"),
     path('remove_status/<int:id>', views.remove_status),
+    path('export_status/', views.export_status, name='export-status'),
 
     # Grower
     path('grower/', views.grower, name="grower"),
     path('remove_grower/<int:id>', views.remove_grower),
+    path('export_grower/', views.export_grower, name='export-grower'),
 
     # Industry
     path('industry/', views.industry, name="industry"),
     path('remove_industry/<int:id>', views.remove_industry),
-    
+    path('export_industry/', views.export_industry, name='export-industry'),
+
     # User Registration
     path('user/register', views.register),
 
