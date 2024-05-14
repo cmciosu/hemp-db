@@ -10,7 +10,7 @@
 <div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">
   {% if user.is_staff %}
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
-    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
+    <a href="{% url 'export-industry' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
   {% endif %}
 
   <div class="btn-group" role="group">

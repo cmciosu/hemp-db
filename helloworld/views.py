@@ -267,6 +267,20 @@ def remove_categories(request, id):
     category.delete()
     return redirect('/categories')
 
+
+def export_categories(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="categories.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Category.')[1] for field in Category._meta.fields])
+
+    categories = Category.objects.all().values_list()
+    for category in categories:
+        writer.writerow(category)
+
+    return response
+
 ## Solutions 
 # path('solutions/', views.solutions, name="solutions"),
 # path('remove_solutions/<int:id>', views.remove_solutions),
@@ -288,6 +302,19 @@ def remove_solutions(request, id):
     solution = Solution.objects.get(id = id)
     solution.delete()
     return redirect('/solutions')
+
+def export_solutions(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="solutions.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Solution.')[1] for field in Solution._meta.fields])
+
+    solutions = Solution.objects.all().values_list()
+    for solution in solutions:
+        writer.writerow(solution)
+
+    return response
 
 ## Stakeholder Groups
 # path('stakeholder-groups/', views.stakeholderGroups, name="groups"),
@@ -311,6 +338,19 @@ def remove_stakeholder_groups(request, id):
     group.delete()
     return redirect('/stakeholder-groups')
 
+def export_stakeholder_groups(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="stakeholder_groups.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.stakeholderGroups.')[1] for field in stakeholderGroups._meta.fields])
+
+    StakeholderGroups = stakeholderGroups.objects.all().values_list()
+    for group in StakeholderGroups:
+        writer.writerow(group)
+
+    return response
+
 ## Stage
 # path('stage/', views.stages, name="stages"),
 # path('remove_stages/<int:id>', views.remove_stages),
@@ -333,6 +373,19 @@ def remove_stages(request, id):
     stage.delete()
     return redirect('/stages')
 
+def export_stages(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="stages.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Stage.')[1] for field in Stage._meta.fields])
+
+    stages = Stage.objects.all().values_list()
+    for stage in stages:
+        writer.writerow(stage)
+
+    return response
+
 ## Product Group
 # path('product-groups/', views.productGroups, name="productGroups"),
 # path('remove_groups/<int:id>', views.remove_product_groups),
@@ -354,6 +407,19 @@ def remove_product_groups(request, id):
     group = ProductGroup.objects.get(id = id)
     group.delete()
     return redirect('/product-groups')
+
+def export_product_groups(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="product_groups.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.ProductGroup.')[1] for field in ProductGroup._meta.fields])
+
+    productGroups = ProductGroup.objects.all().values_list()
+    for group in productGroups:
+        writer.writerow(group)
+
+    return response
 
 ## Status
 # path('status/', views.status, name="status"),
@@ -382,6 +448,19 @@ def remove_status(_, id):
     status.delete()
     return redirect('/status')
 
+def export_status(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="status.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Status.')[1] for field in Status._meta.fields])
+
+    status = Status.objects.all().values_list()
+    for data in status:
+        writer.writerow(data)
+
+    return response
+
 ## Grower
 # path('grower/', views.grower, name="grower"),
 # path('remove_grower/<int:id>', views.remove_grower),
@@ -409,6 +488,19 @@ def remove_grower(_, id):
     grower.delete()
     return redirect('/grower')
 
+def export_grower(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="grower.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Grower.')[1] for field in Grower._meta.fields])
+
+    grower = Grower.objects.all().values_list()
+    for data in grower:
+        writer.writerow(data)
+
+    return response
+
 ## Industry
 # path('industry/', views.industry, name="industry"),
 # path('remove_industry/<int:id>', views.remove_industry),
@@ -435,6 +527,19 @@ def remove_industry(_, id):
     industry = Industry.objects.get(id = id)
     industry.delete()
     return redirect('/industry')
+
+def export_industry(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="industry.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([str(field).split('helloworld.Industry.')[1] for field in Industry._meta.fields])
+
+    industry = Industry.objects.all().values_list()
+    for data in industry:
+        writer.writerow(data)
+
+    return response
 
 ## Changes
 # path('changes/', views.changes),
