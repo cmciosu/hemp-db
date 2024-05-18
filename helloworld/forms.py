@@ -32,23 +32,23 @@ class PendingCompanyForm(forms.ModelForm):
     Solutions = forms.ModelMultipleChoiceField(
             queryset=Solution.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     Category = forms.ModelMultipleChoiceField(
             queryset=Category.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     stakeholderGroup = forms.ModelMultipleChoiceField(
             queryset=stakeholderGroups.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     Stage = forms.ModelMultipleChoiceField(
             queryset=Stage.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     productGroup = forms.ModelMultipleChoiceField(
             queryset=ProductGroup.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
 
     class Meta:
         model = PendingCompany
