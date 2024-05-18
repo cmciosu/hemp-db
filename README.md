@@ -17,7 +17,7 @@ This repository hosts all code for the Hemp DB Capstone Project, CS46X at Oregon
 2. `docker build -t hempdb .`
 3. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`     `Note: If using powershell use {pwd} instead of (pwd)`
 Note:
-* if container already exists, run `docker start -a hempdb-dev` 
+* if container already exists, run `docker start -a -i hempdb-dev` 
 5. Develop Features
 
 **no need to restart docker, local code will be synced up with code in container. Just code, ctrl + s, see changes in browser**

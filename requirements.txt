@@ -8,3 +8,4 @@ ruff==0.1.14
 whitenoise
 crispy-bootstrap5
 django-cachalot
+django-redis

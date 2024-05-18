@@ -20,6 +20,38 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get('REDIS_URL', os.getenv('REDIS_URL')),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "REDIS_CLIENT_KWARGS": {
+                "ssl": True,
+                "ssl_cert_reqs": None
+            },
+        }
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
 # Application definition
 
 INSTALLED_APPS = [

@@ -106,7 +106,7 @@ def companies(request):
         upper = 50
     lower = page * 50 - 50
     upper = lower + 50
-    companies = Company.objects.all()[lower:upper]
+    companies = Company.objects.prefetch_related('Category', 'stakeholderGroup', 'Stage', 'productGroup', 'Solutions')[lower:upper]
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
