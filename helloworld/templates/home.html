@@ -7,17 +7,25 @@
 
 {% block content %}
   <div style="margin: 25px 45px;">
-    <h1 style="margin-bottom: 20px;">
-      About Us
+    <h1 class="fs-1" style="margin-bottom: 20px; display: flex; justify-content: center;">
+      Industrial Hemp Stakeholder Database
     </h1>
-    <p class="text-wrap" style="width: 40vw;">
-      The Industrial Hemp Stakeholder Database is a project developed by the College of Business’s Center for Marketing and Consumer Insight in collaboration with the USDA.  The goal is to bring visibility to the hemp industry for companies, farmers, handlers, distributors, and the general population alike.
-    </p>
-    <p class="text-wrap" style="width: 40vw;">
-      The development of the Industrial Hemp Database (IHDB) is supported by USDA AFRI SAS Grant# 2021-68012-35957.
-    </p>
-    <a class="btn btn-primary" href="/about" style="margin-top: 20px;"> 
-      Learn More 
-    </a>
+    <div style="display: grid; justify-content: center;">
+      <p class="text-wrap fs-6" style="width: 40vw;">
+        The Industrial Hemp Stakeholder Database is a project developed by the Oregon State University College of Business’s Center for Marketing and Consumer Insight in collaboration with the USDA.  The goal is to bring visibility to the hemp industry for companies, farmers, handlers, distributors, and the general population alike.
+      </p>
+      <p class="text-wrap fs-6" style="width: 40vw;">
+        The development of the Industrial Hemp Database (IHDB) is supported by USDA AFRI SAS Grant# 2021-68012-35957.
+      </p>
+    </div>
+    <div style="display: flex; justify-content: center; gap: 15px;">
+      <a class="btn btn-primary" href="/about" style="margin-top: 20px; "> 
+        Learn More 
+      </a>
+      <a class="btn btn-primary" href="/contribute" style="margin-top: 20px; "> 
+        Contribute
+      </a>
+    </div>
+    <hr />
   </div>
 {% endblock %}
