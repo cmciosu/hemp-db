@@ -1,4 +1,3 @@
-## Forms
 from .forms import PendingCompanyForm
 from .forms import CategoryForm
 from .forms import SolutionForm
@@ -10,7 +9,6 @@ from .forms import SearchForm
 from .forms import GrowerForm
 from .forms import IndustryForm
 from .forms import StatusForm
-## Models
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -22,50 +20,63 @@ from .models import PendingChanges
 from .models import Grower
 from .models import Industry
 from .models import Status
-## Django 
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
-from django.http import HttpResponse
-
+from django.http import HttpResponse, HttpRequest
 import csv
 
-class CompanyListView(ListView):
-    model = Company
-    template_name = 'company_list.html'
-    context_object_name = 'companies'
+def index(request: HttpRequest) -> HttpResponse:
+    """
+    Root path. Renders home page template
 
-class CompanyCreateView(CreateView):
-    model = Company
-    template_name = 'company_form.html'
-    fields = ['name', 'industry']
-    success_url = '/companies/'  # Redirect to the list view after successful creation
+    Parameters:
+    request (HttpRequest): incoming HTTP request
 
-## Root
-# path("", views.index, name="index"),
-
-def index(request):
+    Returns:
+    response (HttpResponse): HTTP response containing home page template
+    """
     return render(request, 'home.html')
 
-## About
-# path("about/", views.about)
+def about(request: HttpRequest) -> HttpResponse:
+    """
+    Renders about page template
 
-def about(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing about page template
+    """
     return render(request, 'about.html')
 
-## Contribute
-# path("contribute/", views.contribute)
+def contribute(request: HttpRequest) -> HttpResponse:
+    """
+    Renders contribute page template
 
-def contribute(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing contribute page template
+    """
     return render(request, 'contribute.html')
-  
-## User Registration
-# path('user/register', views.register),
 
-def register(request):
+def register(request: HttpRequest) -> HttpResponse:
+    """
+    Handles User Registration via UserRegisterForm. Form is saved for POST requests,
+    rendered for GET requests. Upon account creation, user is logged in and redirected to home
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing registration page template and UserRegisterForm
+    """
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -82,24 +93,19 @@ def register(request):
         form = UserRegisterForm()
     return render(request, 'registration/register.html', {'form': form})
 
-## Companies
-# path('companies/', views.companies, name="companies"),
-# path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
-# path('companies/<int:id>', views.view_company, name='company-view'),
-# path('companies_pending/<int:id>', views.view_company_pending, name='company-view-pending'),
-# path('companies_approve/<int:id>', views.view_company_approve, name='company-pending-approve'),
-# path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
-# path('companies/search/', views.companies_filtered, name='company-filtered'),
-# path('remove_companies/<int:id>', views.remove_companies),
-# path('export/', views.export_companies, name='export-companies'),
-
 @login_required
-def company_list(request):
-    companies = Company.objects.all()
-    return render(request, 'companies.html', {'companies': companies})
+def companies(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Renders Company data for page specified in URL params
+    on POST request, saves form data to PendingCompany, creates PendingChange object with 'create' type
+    on GET request, renders SearchForm, PendingCompanyForm, companies template
 
-@login_required
-def companies(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing companies page template, PendingCompanyForm, SearchForm
+    """
     page = int(request.GET.get('page', 1))
     if page < 1: 
         lower = 0
@@ -120,8 +126,20 @@ def companies(request):
 
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'page': page})
 
-@login_required
-def edit_company(request, id):
+@staff_member_required
+def edit_company(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Protected Route. Handles edit action for Companies
+    for POST requests, saves form data as PendingCompany, creates PendingChange with type 'edit'
+    for GET requests, returns edit form, company data, edit_companies template
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of company to be edited
+
+    Returns:
+    response (HttpResponse): HTTP response containing company editpage template and PendingCompanyForm
+    """
     company = Company.objects.get(id = id)
     form = PendingCompanyForm(request.POST, instance=company)
     if request.POST and form.is_valid():
@@ -139,14 +157,37 @@ def edit_company(request, id):
 
     return render(request, 'edit_companies.html', {'form': form, 'company': company})
 
-def view_company(request, id):
+@login_required
+def view_company(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Protected Route. Shows all column values for a single company
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of company being viewed
+
+    Returns:
+    response (HttpResponse): HTTP response containing company view page template and company data as dict
+    """
     company = Company.objects.get(id = id)
-    # fields = Company._meta.get_fields()
     obj = model_to_dict(company)
 
     return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
-def view_company_pending(request, changeType, id):
+@staff_member_required
+def view_company_pending(request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+    """
+    Staff Route. Shows all column values for a single pending company, 
+    as well as its change type
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
+    id (int): id of company being viewed
+
+    Returns:
+    response (HttpResponse): HTTP response containing company view page template and company data as dict
+    """
     if changeType == 'deletion':
         company = Company.objects.get(id = id)
     if changeType == 'create' or changeType == 'edit':
@@ -155,9 +196,24 @@ def view_company_pending(request, changeType, id):
         
     return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'changeType': changeType})
 
-def view_company_approve(_, changeType, id):
+@staff_member_required
+def view_company_approve(_request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+    """
+    Staff Route. Handles approval of a PendingChange for companies
+    if changeType is deletion, company is deleted from PendingCompanies
+    if changeType is create, company is copied from PendingCompanies into Companies table
+    if changeType is edit, company in Companies table is edited with all values from PendingCompany
+    PendingChange and PendingCompany records are deleted (cleanup)
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
+    id (int): id of approved company
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to /companies view
+    """
     if changeType == 'deletion':
-        # Delete Company and Change
         company = Company.objects.get(id = id)
         company.delete()
         change = PendingChanges.objects.get(companyId = id, changeType = changeType)
@@ -168,27 +224,36 @@ def view_company_approve(_, changeType, id):
     pendingCompany = PendingCompany.objects.get(id = id)
     change = PendingChanges.objects.get(companyId = id, changeType = changeType)
     if changeType == 'create':
-        # Create new Company, copy over fields
         new_company = Company()
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
     if changeType == 'edit':
-        # Find company to edit, copy over fields
         company = Company.objects.get(id = change.editId)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
         company.save()
 
-    # Delete change and pending company
     change.delete()
     pendingCompany.delete()
 
     return redirect('/companies')
 
-def view_company_reject(_, changeType, id):
+@staff_member_required
+def view_company_reject(_request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+    """
+    Staff Route. Rejects a PendingChange
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
+    id (int): id of rejected company
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to PendingChanges view
+    """
     change = PendingChanges.objects.get(companyId = id, changeType = changeType)
     if changeType == 'create' or changeType == 'edit':
         company = PendingCompany.objects.get(id=id)
@@ -197,7 +262,18 @@ def view_company_reject(_, changeType, id):
 
     return redirect('/changes')
 
-def companies_filtered(request):
+@login_required
+def companies_filtered(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Basically does the same thing as the /companies route, except 
+    filters queryset based on SearchForm input. This route is also paginated (50 per page)
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing company page template and filtered company data
+    """
     page = int(request.GET.get('page', 1))
     if page < 1: 
         lower = 0
@@ -219,15 +295,37 @@ def companies_filtered(request):
     
     form = PendingCompanyForm()
     searchForm = SearchForm()
+
     return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value(), 'page': page})
 
-def remove_companies(request, id):
-    # Add deletion to pending changes
+@staff_member_required
+def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Adds deletion to PendingChanges
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of company to be deleted
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to /companies
+    """
     PendingChanges.objects.create(companyId=id, changeType='deletion')
     messages.info(request, 'Deletion of Company requested')
+
     return redirect('/companies')
 
-def export_companies(request):
+@staff_member_required
+def export_companies(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all data from Company table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+
+    Returns:
+    response (HttpResponse): HTTP response containing company data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="companies.csv"'
 
@@ -240,17 +338,18 @@ def export_companies(request):
 
     return response
 
-## Categories
-# path('categories/', views.categories, name="categories"),
-# path('remove_categories/<int:id>', views.remove_categories),
-
 @login_required
-def categories_list(request):
-    categories = Category.objects.all()
-    return render(request, 'categories.html', {'categories': categories})
+def categories(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all categories from Category table
+    for POST requests, saves form data to Category table
 
-@login_required
-def categories(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing category data
+    """
     categories = Category.objects.all()
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -262,13 +361,33 @@ def categories(request):
 
     return render(request, 'categories.html', {'form': form, 'categories': categories})
 
-def remove_categories(request, id):
+@staff_member_required
+def remove_categories(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a category
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of category to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to categories view
+    """
     category = Category.objects.get(id = id)
     category.delete()
     return redirect('/categories')
 
+@staff_member_required
+def export_categories(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Category table to csv
 
-def export_categories(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing category data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="categories.csv"'
 
@@ -281,12 +400,18 @@ def export_categories(request):
 
     return response
 
-## Solutions 
-# path('solutions/', views.solutions, name="solutions"),
-# path('remove_solutions/<int:id>', views.remove_solutions),
-
 @login_required
-def solutions(request):
+def solutions(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all solutions from Solution table
+    for POST requests, saves form data to Solution table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing solution data
+    """
     solutions = Solution.objects.all()
     if request.method == 'POST':
         form = SolutionForm(request.POST)
@@ -298,12 +423,33 @@ def solutions(request):
 
     return render(request, 'solutions.html', {'form': form, 'solutions': solutions})
 
-def remove_solutions(request, id):
+@staff_member_required
+def remove_solutions(_request: HttpRequest, id: int):
+    """
+    Staff Route. Removes a solution
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of solution to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to solution view
+    """
     solution = Solution.objects.get(id = id)
     solution.delete()
     return redirect('/solutions')
 
-def export_solutions(request):
+@staff_member_required
+def export_solutions(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Solutions table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing solution data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="solutions.csv"'
 
@@ -316,12 +462,18 @@ def export_solutions(request):
 
     return response
 
-## Stakeholder Groups
-# path('stakeholder-groups/', views.stakeholderGroups, name="groups"),
-# path('remove_groups/<int:id>', views.remove_stakeholder_groups),
-
 @login_required
-def StakeholderGroups(request):
+def StakeholderGroups(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from stakeholderGroups table
+    for POST requests, saves form data to stakeholderGroups table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing stakeholderGroups data
+    """
     groups = stakeholderGroups.objects.all()
     if request.method == 'POST':
         form = stakeholderGroupsForm(request.POST)
@@ -333,12 +485,33 @@ def StakeholderGroups(request):
 
     return render(request, 'stakeholderGroups.html', {'form': form, 'groups': groups})
 
-def remove_stakeholder_groups(request, id):
+@staff_member_required
+def remove_stakeholder_groups(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a stakeholderGroups
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of stakeholderGroups to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to stakeholderGroups view
+    """
     group = stakeholderGroups.objects.get(id = id)
     group.delete()
     return redirect('/stakeholder-groups')
 
-def export_stakeholder_groups(request):
+@staff_member_required
+def export_stakeholder_groups(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in stakeholderGroups table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing stakeholderGroups data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="stakeholder_groups.csv"'
 
@@ -351,12 +524,18 @@ def export_stakeholder_groups(request):
 
     return response
 
-## Stage
-# path('stage/', views.stages, name="stages"),
-# path('remove_stages/<int:id>', views.remove_stages),
-
 @login_required
-def stages(request):
+def stages(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from Stage table
+    for POST requests, saves form data to Stage table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Stage data
+    """
     stages = Stage.objects.all()
     if request.method == 'POST':
         form = StageForm(request.POST)
@@ -368,12 +547,33 @@ def stages(request):
 
     return render(request, 'stages.html', {'form': form, 'stages': stages})
 
-def remove_stages(request, id):
+@staff_member_required
+def remove_stages(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a Stage
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of Stage to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to Stage view
+    """
     stage = Stage.objects.get(id = id)
     stage.delete()
     return redirect('/stages')
 
-def export_stages(request):
+@staff_member_required
+def export_stages(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Stage table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Stage data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="stages.csv"'
 
@@ -386,12 +586,18 @@ def export_stages(request):
 
     return response
 
-## Product Group
-# path('product-groups/', views.productGroups, name="productGroups"),
-# path('remove_groups/<int:id>', views.remove_product_groups),
-
 @login_required
-def productGroups(request):
+def productGroups(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from productGroup table
+    for POST requests, saves form data to productGroup table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing productGroup data
+    """
     groups = ProductGroup.objects.all()
     if request.method == 'POST':
         form = ProductGroupForm(request.POST)
@@ -403,12 +609,33 @@ def productGroups(request):
 
     return render(request, 'productGroups.html', {'form': form, 'productGroups': groups})
 
-def remove_product_groups(request, id):
+@staff_member_required
+def remove_product_groups(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a ProductGroup
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of ProductGroup to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to ProductGroup view
+    """
     group = ProductGroup.objects.get(id = id)
     group.delete()
     return redirect('/product-groups')
 
-def export_product_groups(request):
+@staff_member_required
+def export_product_groups(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in ProductGroup table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing ProductGroup data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="product_groups.csv"'
 
@@ -421,17 +648,18 @@ def export_product_groups(request):
 
     return response
 
-## Status
-# path('status/', views.status, name="status"),
-# path('remove_status/<int:id>', views.remove_status),
-
 @login_required
-def status_list(request):
-    status = Status.objects.all()
-    return render(request, 'status.html', {'status': status})
+def status(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from Status table
+    for POST requests, saves form data to Status table
 
-@login_required
-def status(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Status data
+    """
     status = Status.objects.all()
     if request.method == 'POST':
         form = StatusForm(request.POST)
@@ -443,12 +671,33 @@ def status(request):
 
     return render(request, 'status.html', {'form': form, 'status': status})
 
-def remove_status(_, id):
+@staff_member_required
+def remove_status(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a Status
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of Status to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to Status view
+    """
     status = Status.objects.get(id = id)
     status.delete()
     return redirect('/status')
 
-def export_status(request):
+@staff_member_required
+def export_status(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Status table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Status data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="status.csv"'
 
@@ -461,17 +710,18 @@ def export_status(request):
 
     return response
 
-## Grower
-# path('grower/', views.grower, name="grower"),
-# path('remove_grower/<int:id>', views.remove_grower),
-
 @login_required
-def grower_list(request):
-    growers = Grower.objects.all()
-    return render(request, 'grower.html', {'growers': growers})
+def grower(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from Grower table
+    for POST requests, saves form data to Grower table
 
-@login_required
-def grower(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Grower data
+    """
     growers = Grower.objects.all()
     if request.method == 'POST':
         form = GrowerForm(request.POST)
@@ -483,12 +733,33 @@ def grower(request):
 
     return render(request, 'grower.html', {'form': form, 'growers': growers})
 
-def remove_grower(_, id):
+@staff_member_required
+def remove_grower(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes a Grower
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of Grower to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to Grower view
+    """
     grower = Grower.objects.get(id = id)
     grower.delete()
     return redirect('/grower')
 
-def export_grower(request):
+@staff_member_required
+def export_grower(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Grower table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Grower data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="grower.csv"'
 
@@ -501,17 +772,18 @@ def export_grower(request):
 
     return response
 
-## Industry
-# path('industry/', views.industry, name="industry"),
-# path('remove_industry/<int:id>', views.remove_industry),
-
 @login_required
-def industry_list(request):
-    industries = Industry.objects.all()
-    return render(request, 'industry.html', {'industries': industries})
+def industry(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from Industry table
+    for POST requests, saves form data to Industry table
 
-@login_required
-def industry(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Industry data
+    """
     industries = Industry.objects.all()
     if request.method == 'POST':
         form = IndustryForm(request.POST)
@@ -523,12 +795,32 @@ def industry(request):
 
     return render(request, 'industry.html', {'form': form, 'industries': industries})
 
-def remove_industry(_, id):
+@staff_member_required
+def remove_industry(_request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Removes an Industry
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request (unused)
+    id (int): id of Industry to be deleted 
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to Industry view
+    """
     industry = Industry.objects.get(id = id)
     industry.delete()
     return redirect('/industry')
 
-def export_industry(request):
+def export_industry(_request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Exports all entries in Industry table to csv
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing Industry data in csv
+    """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="industry.csv"'
 
@@ -541,11 +833,17 @@ def export_industry(request):
 
     return response
 
-## Changes
-# path('changes/', views.changes),
+@staff_member_required
+def dbChanges(request: HttpRequest) -> HttpResponse:
+    """
+    Protected Route. Shows all entries from PendingChanges table
 
-@login_required
-def dbChanges(request):
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response containing PendingChanges data
+    """
     changes = PendingChanges.objects.all()
     
     return render(request, 'companies_pending.html', {'changes': changes})

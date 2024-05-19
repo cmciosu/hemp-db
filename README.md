@@ -1,45 +1,31 @@
-# hemp-db
+# HempDB
 
-This repository hosts all code for the Hemp DB Capstone Project, CS46X at Oregon State University
+![](https://github.com/cmciosu/hemp-db/actions/workflows/migrate-test-lint.yml/badge.svg)
+![](https://img.shields.io/github/deployments/cmciosu/hemp-db/production?style=flat&logo=vercel&label=vercel
+)
 
-## Local Setup
+This repository hosts all code and documentation for the HempDB Senior Capstone Project, CS46X at Oregon State University
 
-1. Clone repository
-2. `cp .env.example .env`
-3. Add credentials to .env file
-4. `docker build -t hempdb .`
-5. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`    `Note: If using powershell use {pwd} instead of (pwd)`
-6. Open http://localhost:8000
+## About
 
-## Local Development
+This web application is intended to aid the Oregon State University Center for Marketing and Consumer Insights with performing market research in the hemp industry. This research is supported by **USDA AFRI SAS Grant# 2021-68012-35957**. 
 
-1. Checkout new branch
-2. `docker build -t hempdb .`
-3. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`     `Note: If using powershell use {pwd} instead of (pwd)`
-Note:
-* if container already exists, run `docker start -a -i hempdb-dev` 
-5. Develop Features
+What was previously a single large excel sheet is now a hosted web application, backed by a relational database for easy and robust data storage and modeling. With user experience in mind, this website makes it easy for researchers to manage the large repository of company data, while also allowing them to share their research with the public
 
-**no need to restart docker, local code will be synced up with code in container. Just code, ctrl + s, see changes in browser**
+## Team
 
-6. Lint with `ruff check .`
-6.a Fix with `ruff check . --fix`
+Dr. Johnny Chen, CMCI - Project Partner \
+Cherish Despain, CMCI - Research Assistant
 
-7. Open PR to dev
+Dylan Meithof - Software Team \
+Gabriele Falchini - Software Team \
+Paul Lipp - Software Team \
+Zachary Smith - Software Team 
 
-Make sure to add any new dependencies to requirements.txt
 
-For migrations, run
-1. `docker exec -it hempdb-dev bash`
-2. `python manage.py makemigrations`
-3. `python manage.py migrate`
+## Contributing
 
-For new env vars, add to .env, .env.example, and vercel
+- To submit a [bug report / feature request](https://github.com/cmciosu/hemp-db/issues)
 
-## Deploy to Production
+- See [Developing](docs/DEVELOP.md) for documentation on developing on HempDB
 
-### ⚠️⚠️⚠️ Make sure Debug is set to False ⚠️⚠️⚠️
-
-1. Go to `hempdb/settings.py`, set Debug to False
-2. Go to vercel, make sure build succeeded
-3. Open PR to main

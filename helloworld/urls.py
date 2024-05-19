@@ -2,8 +2,6 @@
 from django.urls import path
 ## Views
 from . import views
-from .views import CompanyCreateView
-
 
 urlpatterns = [
     # Root
@@ -17,7 +15,6 @@ urlpatterns = [
 
     # Companies
     path('companies/', views.companies, name="companies"),
-    path('companies/create/', CompanyCreateView.as_view(), name='company-create'),
     path('companies/<int:id>', views.view_company, name='company-view'),
     path('companies_pending/<str:changeType>/<int:id>', views.view_company_pending, name='company-view-pending'),
     path('companies_approve/<str:changeType>/<int:id>', views.view_company_approve, name='company-pending-approve'),

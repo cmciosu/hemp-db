@@ -1,8 +1,6 @@
-## Django
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-## Models
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -53,7 +51,6 @@ class PendingCompanyForm(forms.ModelForm):
     class Meta:
         model = PendingCompany
         fields = "__all__"
-        # exclude = ["Solutions", "Category", "stakeholderGroup", "Stage", "productGroup"]
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

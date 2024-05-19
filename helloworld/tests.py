@@ -1,6 +1,4 @@
-## Django Testing
 from django.test import TestCase
-## Models
 from .models import Company
 from .models import PendingCompany
 from .models import Category
