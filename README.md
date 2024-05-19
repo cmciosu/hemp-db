@@ -1,8 +1,8 @@
 # HempDB
 
 ![](https://github.com/cmciosu/hemp-db/actions/workflows/migrate-test-lint.yml/badge.svg)
-![](https://img.shields.io/github/deployments/cmciosu/hemp-db/production?style=flat&logo=vercel&label=vercel
-)
+![](https://img.shields.io/github/deployments/cmciosu/hemp-db/production?style=flat&logo=vercel&label=vercel)
+![](https://img.shields.io/website?url=https%3A%2F%2Fhempdb.vercel.app&label=HempDB)
 
 This repository hosts all code and documentation for the HempDB Senior Capstone Project, CS46X at Oregon State University
 
