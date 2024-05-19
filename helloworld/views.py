@@ -27,7 +27,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
-from django.db.models import Prefetch
 import csv
 
 def index(request: HttpRequest) -> HttpResponse:
