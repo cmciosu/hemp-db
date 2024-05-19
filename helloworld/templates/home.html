@@ -6,6 +6,16 @@
 
 
 {% block content %}
+
+{% if messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
+    {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endif %}
+
   <div style="margin: 25px 45px;">
     <h1 class="fs-1" style="margin-bottom: 20px; display: flex; justify-content: center;">
       Industrial Hemp Stakeholder Database
