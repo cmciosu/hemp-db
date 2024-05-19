@@ -12,5 +12,4 @@ urlpatterns = [
     path("", include("helloworld.urls")),
     path('admin/', admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
-    path("__debug__/", include("debug_toolbar.urls")),
 ]
