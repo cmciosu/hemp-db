@@ -16,20 +16,9 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-# Config for redis cache
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get('REDIS_URL', os.getenv('REDIS_URL')),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "REDIS_CLIENT_KWARGS": {
-                "ssl": True,
-                "ssl_cert_reqs": None
-            },
-        }
-    }
-}
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 # Logger config. Logs out all DB queries. Needs to be in DEBUG = True to log to console
 LOGGING = {
@@ -61,10 +50,10 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap5',
     'crispy_bootstrap5',
-    'cachalot',
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # Top-level URLs
