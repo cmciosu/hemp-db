@@ -27,6 +27,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
+from django.db.models import Prefetch
 import csv
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -98,6 +99,8 @@ def companies(request: HttpRequest) -> HttpResponse:
     Protected Route. Renders Company data for page specified in URL params
     on POST request, saves form data to PendingCompany, creates PendingChange object with 'create' type
     on GET request, renders SearchForm, PendingCompanyForm, companies template
+    We pre-fetch all the m2m tables, which results in one big query being run, rather than hundreds of small ones
+    After prefetch_related, all company.___.all() queries don't hit the db, resulting in near instant response time
 
     Parameters:
     request (HttpRequest): incoming HTTP request
@@ -111,7 +114,14 @@ def companies(request: HttpRequest) -> HttpResponse:
         upper = 50
     lower = page * 50 - 50
     upper = lower + 50
-    companies = Company.objects.prefetch_related('Category', 'stakeholderGroup', 'Stage', 'productGroup', 'Solutions')[lower:upper]
+
+    companies = Company.objects.filter(id__gte=lower, id__lte=upper).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
+    categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
+    productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
+    stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
+    stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
+    
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
@@ -123,7 +133,13 @@ def companies(request: HttpRequest) -> HttpResponse:
         form = PendingCompanyForm()
         searchForm = SearchForm()
 
-    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'page': page})
+    data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
+
+    return render(request, 'companies.html', {'form': form,
+                                              'companies': data,
+                                              'searchForm': searchForm, 
+                                              'page': page
+                                              })
 
 @staff_member_required
 def edit_company(request: HttpRequest, id: int) -> HttpResponse:
@@ -282,7 +298,12 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     query = request.GET.get('query', '')
     # If query provided as url parameter, use that
     if query != '':
-        companies = Company.objects.filter(Name__contains=query)[lower:upper]
+        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
+        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
+        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
+        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
+        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
         form = PendingCompanyForm()
         searchForm = SearchForm()
         return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page': page})
@@ -290,12 +311,19 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     else:
         form = SearchForm(request.POST)
         query = form['q']
-        companies = Company.objects.filter(Name__contains=query.value())[lower:upper]
-    
+        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
+        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
+        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
+        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
+        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
+
     form = PendingCompanyForm()
     searchForm = SearchForm()
 
-    return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query.value(), 'page': page})
+    data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
+
+    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value(), 'page': page})
 
 @staff_member_required
 def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
