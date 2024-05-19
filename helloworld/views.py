@@ -21,7 +21,6 @@ from .models import Grower
 from .models import Industry
 from .models import Status
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, CreateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
