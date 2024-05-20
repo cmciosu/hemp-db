@@ -9,6 +9,13 @@ from .forms import SearchForm
 from .forms import GrowerForm
 from .forms import IndustryForm
 from .forms import StatusForm
+from .forms import FilterStatusForm
+from .forms import FilterIndustryForm
+from .forms import FilterCategoryForm
+from .forms import FilterStakeholderGroupForm
+from .forms import FilterStageForm
+from .forms import FilterProductGroupForm
+from .forms import FilterSolutionForm
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -28,6 +35,8 @@ from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
 import csv
+
+PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 def index(request: HttpRequest) -> HttpResponse:
     """
@@ -111,10 +120,7 @@ def companies(request: HttpRequest) -> HttpResponse:
 
     page = int(request.GET.get('page', 1))
     
-    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-
-
-    companies = Company.objects.filter(Name__istartswith=page_index[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    companies = Company.objects.filter(Name__istartswith=PAGE_INDEX[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
     productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -131,6 +137,13 @@ def companies(request: HttpRequest) -> HttpResponse:
     else:
         form = PendingCompanyForm()
         searchForm = SearchForm()
+        filterStatusForm = FilterStatusForm()
+        filterIndustryForm = FilterIndustryForm()
+        filterCategoryForm = FilterCategoryForm()
+        filterStakeholderGroupForm = FilterStakeholderGroupForm()
+        filterStageForm = FilterStageForm()
+        filterProductGroupForm = FilterProductGroupForm()
+        filterSolutionForm = FilterSolutionForm()
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
@@ -138,7 +151,14 @@ def companies(request: HttpRequest) -> HttpResponse:
                                               'companies': data,
                                               'searchForm': searchForm, 
                                               'page': page,
-                                              'page_index':page_index
+                                              'page_index': PAGE_INDEX,
+                                              'filterStatusForm': filterStatusForm,
+                                              'filterIndustryForm': filterIndustryForm,
+                                              'filterCategoryForm': filterCategoryForm,
+                                              'filterStakeholderGroupForm': filterStakeholderGroupForm,
+                                              'filterStageForm': filterStageForm,
+                                              'filterProductGroupForm': filterProductGroupForm,
+                                              'filterSolutionForm': filterSolutionForm
                                               })
 
 @staff_member_required
@@ -289,37 +309,65 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
-    query = request.GET.get('query', '')
-    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    
-    # If query provided as url parameter, use that
-    if query != '':
-        companies = Company.objects.filter(Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
-        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
-        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
-        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
-        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
-        form = PendingCompanyForm()
-        searchForm = SearchForm()
-        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page_index': page_index})
-    # else if query provided by form submission, use that
-    else:
+    query = None
+
+    if "status-filter" in request.POST:
+        status_ids = request.POST.getlist("status")
+        companies = Company.objects.filter(Status__in=status_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "industry-filter" in request.POST:
+        industry_ids = request.POST.getlist("industry")
+        companies = Company.objects.filter(Industry__in=industry_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "category-filter" in request.POST:
+        category_ids = request.POST.getlist("category")
+        companies = Company.objects.filter(Category__in=category_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "stakeholder-group-filter" in request.POST:
+        group_ids = request.POST.getlist("stakeholder_groups")
+        companies = Company.objects.filter(stakeholderGroup__in=group_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "stage-filter" in request.POST:
+        stage_ids = request.POST.getlist("stage")
+        companies = Company.objects.filter(Stage__in=stage_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "product-group-filter" in request.POST:
+        product_ids = request.POST.getlist("product_group")
+        companies = Company.objects.filter(productGroup__in=product_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "solution-filter" in request.POST:
+        solution_ids = request.POST.getlist("solution")
+        companies = Company.objects.filter(Solutions__in=solution_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "company-search" in request.POST:
         form = SearchForm(request.POST)
-        query = form['q']
+        query = form["q"]
         companies = Company.objects.filter(Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
-        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
-        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
-        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
-        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
+    
+    solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
+    categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
+    productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
+    stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
+    stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
 
     form = PendingCompanyForm()
     searchForm = SearchForm()
+    filterStatusForm = FilterStatusForm()
+    filterIndustryForm = FilterIndustryForm()
+    filterCategoryForm = FilterCategoryForm()
+    filterStakeholderGroupForm = FilterStakeholderGroupForm()
+    filterStageForm = FilterStageForm()
+    filterProductGroupForm = FilterProductGroupForm()
+    filterSolutionForm = FilterSolutionForm()
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
-    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value(), 'page_index': page_index})
+    return render(request, 'companies.html', {'form': form, 
+                                              'companies': data, 
+                                              'searchForm': searchForm, 
+                                              'query': query.value() if query else None, 
+                                              'page_index': PAGE_INDEX,
+                                              'filterStatusForm': filterStatusForm,
+                                              'filterIndustryForm': filterIndustryForm,
+                                              'filterCategoryForm': filterCategoryForm,
+                                              'filterStakeholderGroupForm': filterStakeholderGroupForm,
+                                              'filterStageForm': filterStageForm,
+                                              'filterProductGroupForm': filterProductGroupForm,
+                                              'filterSolutionForm': filterSolutionForm
+                                              })
 
 @staff_member_required
 def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
