@@ -310,28 +310,27 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
     query = None
-
-    if "status-filter" in request.POST:
+    if "item-filter" in request.POST:
         status_ids = request.POST.getlist("status")
-        companies = Company.objects.filter(Status__in=status_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "industry-filter" in request.POST:
         industry_ids = request.POST.getlist("industry")
-        companies = Company.objects.filter(Industry__in=industry_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "category-filter" in request.POST:
         category_ids = request.POST.getlist("category")
-        companies = Company.objects.filter(Category__in=category_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "stakeholder-group-filter" in request.POST:
-        group_ids = request.POST.getlist("stakeholder_groups")
-        companies = Company.objects.filter(stakeholderGroup__in=group_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "stage-filter" in request.POST:
+        stakeholder_group_ids = request.POST.getlist("stakeholder_groups")
         stage_ids = request.POST.getlist("stage")
-        companies = Company.objects.filter(Stage__in=stage_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "product-group-filter" in request.POST:
         product_ids = request.POST.getlist("product_group")
-        companies = Company.objects.filter(productGroup__in=product_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    if "solution-filter" in request.POST:
         solution_ids = request.POST.getlist("solution")
-        companies = Company.objects.filter(Solutions__in=solution_ids).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        filter_lists = [
+            (status_ids, "Status"), 
+            (industry_ids, "Industry"), 
+            (category_ids, "Category"), 
+            (stakeholder_group_ids, "stakeholderGroup"),
+            (stage_ids, "Stage"),
+            (product_ids, "productGroup"),
+            (solution_ids, "Solutions")
+        ]
+        for lst, field in filter_lists:
+            if lst:
+                companies = companies.filter(**{f"{field}__in": lst})
     if "company-search" in request.POST:
         form = SearchForm(request.POST)
         query = form["q"]

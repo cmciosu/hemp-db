@@ -20,6 +20,11 @@
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
     <a href="{% url 'export-companies' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
+    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
+      </svg>              
+    </button>
     {% endif %}
     
     <div class="btn-group mx-5" role="group">
@@ -37,82 +42,18 @@
       <a href="/companies/?page={{ forloop.counter }}" style="gap: 10px;"> {{page}} </a>
     {% endfor %}
 </div>
-
   <table class="table table-bordered border-success table-sm">
     <thead>
       <tr>
         <th scope="col">Company Name</th>
-        <th scope="col">
-          <div>
-            Status
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterStatusModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
-        <th scope="col">
-          <div>
-            Industry
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterIndustryModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
-        <th scope="col">
-          <div>
-            Stakeholder Category
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterCategoryModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
-        <th scope="col">
-          <div>
-            Stakeholder Group
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterStakeholderGroupModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
-        <th scope="col">
-          <div>
-            Development Stage
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterStageModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
-        <th scope="col">
-          <div>
-            Product Group
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterProductGroupModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
+        <th scope="col">Status</th>
+        <th scope="col">Industry</th>
+        <th scope="col">Stakeholder Category</th>
+        <th scope="col">Stakeholder Group</th>
+        <th scope="col">Development Stage</th>
+        <th scope="col">Product Group</th>
         <th scope="col">Description</th>
-        <th scope="col">
-          <div>
-            Solution
-            <button type="button" class="btn btn-none" data-bs-toggle="modal" data-bs-target="#filterSolutionModal">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
-              </svg>              
-            </button>
-          </div>
-        </th>
+        <th scope="col">Solution</th>
         {%if user.is_staff %}
           <th scope="col">Actions</th>
         {% endif %}
@@ -229,140 +170,28 @@
     {% endfor %}
   </div>
 
-  <div class="modal" id="filterStatusModal">
-    <div class="modal-dialog">
+  <div class="modal" id="filterModal">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
   
         <div class="modal-header">
-          <h4 class="modal-title">Filter by Status</h4>
+          <h4 class="modal-title">Filter Companies</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
         <div class="modal-body">
           <form method="post" action="/companies/search/">
             {% csrf_token %}
-            {{ filterStatusForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="status-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterIndustryModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Industry</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterIndustryForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="industry-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterCategoryModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Category</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterCategoryForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="category-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterStakeholderGroupModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Stakeholder Group</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterStakeholderGroupForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="stakeholder-group-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterStageModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Development Stage</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterStageForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="stage-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterProductGroupModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Product Group</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterProductGroupForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="product-group-filter">Submit</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="filterSolutionModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-  
-        <div class="modal-header">
-          <h4 class="modal-title">Filter by Solution</h4>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form method="post" action="/companies/search/">
-            {% csrf_token %}
-            {{ filterSolutionForm.as_p }}
-            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="solution-filter">Submit</button>
+            <div class="d-block gap-3">
+              {{ filterStatusForm.as_p }}
+              {{ filterIndustryForm.as_p }}
+              {{ filterCategoryForm.as_p }}
+              {{ filterStakeholderGroupForm.as_p }}
+              {{ filterStageForm.as_p }}
+              {{ filterProductGroupForm.as_p }}
+              {{ filterSolutionForm.as_p }}
+            </div>
+            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="item-filter">Submit</button>
           </form>
         </div>
       </div>
