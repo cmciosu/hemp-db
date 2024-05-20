@@ -301,7 +301,7 @@ def view_company_reject(_request: HttpRequest, changeType: str, id: int) -> Http
 def companies_filtered(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Basically does the same thing as the /companies route, except 
-    filters queryset based on SearchForm input.
+    filters queryset based on SearchForm / Filter input.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
@@ -310,6 +310,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
     query = None
+    companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
     if "item-filter" in request.POST:
         status_ids = request.POST.getlist("status")
         industry_ids = request.POST.getlist("industry")
@@ -318,7 +319,6 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
         stage_ids = request.POST.getlist("stage")
         product_ids = request.POST.getlist("product_group")
         solution_ids = request.POST.getlist("solution")
-        companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
         filter_lists = [
             (status_ids, "Status"), 
             (industry_ids, "Industry"), 
@@ -331,10 +331,11 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
         for lst, field in filter_lists:
             if lst:
                 companies = companies.filter(**{f"{field}__in": lst})
+
     if "company-search" in request.POST:
         form = SearchForm(request.POST)
         query = form["q"]
-        companies = Company.objects.filter(Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        companies = companies.filter(Name__contains=query.value())
     
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]

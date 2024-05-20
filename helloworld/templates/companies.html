@@ -28,10 +28,10 @@
     {% endif %}
     
     <div class="btn-group mx-5" role="group">
-      <form method="post" action="/companies/search/" name="company-search">
+      <form method="post" action="/companies/search/">
         {% csrf_token %}
         {{ searchForm.q }}
-        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit">Search</a>
+        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit" name="company-search">Search</a>
       </form>
     </div>
     {% if query %}
