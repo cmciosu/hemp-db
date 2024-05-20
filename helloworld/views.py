@@ -115,7 +115,6 @@ def companies(request: HttpRequest) -> HttpResponse:
 
 
     companies = Company.objects.filter(Name__istartswith=page_index[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-    #print(companies)
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
     productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -282,7 +281,7 @@ def view_company_reject(_request: HttpRequest, changeType: str, id: int) -> Http
 def companies_filtered(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Basically does the same thing as the /companies route, except 
-    filters queryset based on SearchForm input. This route is also paginated (50 per page)
+    filters queryset based on SearchForm input.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
@@ -290,13 +289,11 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
-    page = int(request.GET.get('page', 1))
+    query = request.GET.get('query', '')
 
-
-    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
     # If query provided as url parameter, use that
     if query != '':
-        companies = Company.objects.filter(Name__istartswith=page_index[page-1], Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        companies = Company.objects.filter(Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
         solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
         categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
         productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -304,12 +301,12 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
         stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
         form = PendingCompanyForm()
         searchForm = SearchForm()
-        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page': page})
+        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query})
     # else if query provided by form submission, use that
     else:
         form = SearchForm(request.POST)
         query = form['q']
-        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        companies = Company.objects.filter(Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
         solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
         categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
         productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -321,7 +318,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
-    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value(), 'page': page})
+    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value()})
 
 @staff_member_required
 def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
