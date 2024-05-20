@@ -290,7 +290,8 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
     query = request.GET.get('query', '')
-
+    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    
     # If query provided as url parameter, use that
     if query != '':
         companies = Company.objects.filter(Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
@@ -301,7 +302,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
         stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
         form = PendingCompanyForm()
         searchForm = SearchForm()
-        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query})
+        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page_index': page_index})
     # else if query provided by form submission, use that
     else:
         form = SearchForm(request.POST)
@@ -318,7 +319,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
-    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value()})
+    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value(), 'page_index': page_index})
 
 @staff_member_required
 def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
