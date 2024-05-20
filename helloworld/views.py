@@ -138,7 +138,8 @@ def companies(request: HttpRequest) -> HttpResponse:
     return render(request, 'companies.html', {'form': form,
                                               'companies': data,
                                               'searchForm': searchForm, 
-                                              'page': page
+                                              'page': page,
+                                              'page_index':page_index
                                               })
 
 @staff_member_required

@@ -49,6 +49,10 @@
         <a href="/companies/?page={{ page|add:"1" }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Next Page </a>
       {% endif %}
     </div>
+    
+    {% for page in page_index %}
+      <a href="/companies/?page={{ forloop.counter }}" style="gap: 10px;"> {{page}} </a>
+    {% endfor %}
 </div>
 
   <table class="table table-bordered border-success table-sm">
@@ -187,5 +191,11 @@
       {% endif %}
       <a href="/companies/?page={{ page|add:"1" }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Next Page </a>
   {% endif %}
+
+  </div>
+  <div style="display: flex; justify-content: center; gap: 5px;">
+    {% for page in page_index %}
+    <a href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+    {% endfor %}
   </div>
 {% endblock %}
