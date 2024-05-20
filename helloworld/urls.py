@@ -12,7 +12,10 @@ urlpatterns = [
 
     # Contribute
     path("contribute/", views.contribute),
-
+    
+    # File Upload
+    path("upload/", views.upload_file, name="upload"),
+    
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/<int:id>', views.view_company, name='company-view'),

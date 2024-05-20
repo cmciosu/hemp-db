@@ -158,15 +158,16 @@
   
         <div class="modal-body">
           Select file: 
-          <form method="post" enctype="multipart/form-data">
+          <form method="post" action="/upload/" enctype="multipart/form-data">
             {% csrf_token %}
-            <button type="submit">Upload File</button>
+            {{ uploadForm.as_p }}
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-danger"> Submit </button>
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
           </form>
         </div>
   
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-        </div>
   
       </div>
     </div>

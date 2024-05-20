@@ -12,6 +12,9 @@ from .models import Grower
 from .models import Industry
 from .models import Status
 
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
+
 class SearchForm(forms.Form):
     q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
 

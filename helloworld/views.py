@@ -9,6 +9,7 @@ from .forms import SearchForm
 from .forms import GrowerForm
 from .forms import IndustryForm
 from .forms import StatusForm
+from .forms import UploadFileForm
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -28,6 +29,46 @@ from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
 import csv
+import pandas as pd
+import numpy as np
+
+@staff_member_required
+def upload_file(request: HttpRequest) -> HttpResponse:
+    """
+    Staff route. Should only be used in emergencies (not secure). 
+    Uses pandas to parse uploaded file, saves company data straight to Companies table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request containing file
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to companies page template
+    """
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        try:
+            if form.is_valid():
+                file = request.FILES["file"]
+                df = pd.read_csv(file)
+                df = df.replace({np.nan: ''})
+                frames = df.to_dict("records")
+                for frame in frames:
+                    frame["Status"] = Status.objects.get(id = frame["Status"])
+                    frame["Industry"] = Industry.objects.get(id = frame["Industry"])
+                    frame["Grower"] = Grower.objects.get(id = frame["Grower"])
+                    model = Company(**frame)
+                    model.save()
+                messages.info(request, 'File Data Successfully Uploaded')
+                return redirect("/companies")
+        except:  # noqa: E722
+            messages.error(request, 'There was an error with the file upload') 
+            return redirect("/companies")
+                
+    else:
+        form = UploadFileForm()
+
+    return render(request, "upload.html", {"form": form})
+
 
 def index(request: HttpRequest) -> HttpResponse:
     """
@@ -130,11 +171,13 @@ def companies(request: HttpRequest) -> HttpResponse:
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
+        uploadForm = UploadFileForm()
         searchForm = SearchForm()
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
     return render(request, 'companies.html', {'form': form,
+                                              'uploadForm': uploadForm,
                                               'companies': data,
                                               'searchForm': searchForm, 
                                               'page': page

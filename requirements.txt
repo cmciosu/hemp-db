@@ -7,3 +7,5 @@ djangorestframework==3.13.1
 ruff==0.1.14
 whitenoise
 crispy-bootstrap5
+pandas
+numpy
