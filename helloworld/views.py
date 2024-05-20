@@ -107,14 +107,15 @@ def companies(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing companies page template, PendingCompanyForm, SearchForm
     """
-    page = int(request.GET.get('page', 1))
-    if page < 1: 
-        lower = 0
-        upper = 50
-    lower = page * 50 - 50
-    upper = lower + 50
 
-    companies = Company.objects.filter(id__gte=lower, id__lte=upper).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+
+    page = int(request.GET.get('page', 1))
+    
+    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+
+    companies = Company.objects.filter(Name__istartswith=page_index[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    #print(companies)
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
     productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -289,15 +290,12 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
     page = int(request.GET.get('page', 1))
-    if page < 1: 
-        lower = 0
-        upper = 50
-    lower = page * 50 - 50
-    upper = lower + 50
-    query = request.GET.get('query', '')
+
+
+    page_index = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
     # If query provided as url parameter, use that
     if query != '':
-        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+        companies = Company.objects.filter(Name__istartswith=page_index[page-1], Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
         solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
         categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
         productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
