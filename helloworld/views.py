@@ -430,7 +430,7 @@ def categories(request: HttpRequest) -> HttpResponse:
     else:
         form = CategoryForm()
 
-    return render(request, 'categories.html', {'form': form, 'categories': categories})
+    return render(request, 'categories.html', {'form': form, 'data': categories, 'type': 'category', 'delete_url': 'remove_categories'})
 
 @staff_member_required
 def remove_categories(_request: HttpRequest, id: int) -> HttpResponse:
@@ -492,7 +492,7 @@ def solutions(request: HttpRequest) -> HttpResponse:
     else:
         form = SolutionForm()
 
-    return render(request, 'solutions.html', {'form': form, 'solutions': solutions})
+    return render(request, 'solutions.html', {'form': form, 'data': solutions, 'type': 'solution', 'delete_url': 'remove_solutions'})
 
 @staff_member_required
 def remove_solutions(_request: HttpRequest, id: int):
@@ -554,7 +554,7 @@ def StakeholderGroups(request: HttpRequest) -> HttpResponse:
     else:
         form = stakeholderGroupsForm()
 
-    return render(request, 'stakeholderGroups.html', {'form': form, 'groups': groups})
+    return render(request, 'stakeholderGroups.html', {'form': form, 'type': 'stakeholderGroup', 'data': groups, 'delete_url': 'remove_stakeholder_groups' })
 
 @staff_member_required
 def remove_stakeholder_groups(_request: HttpRequest, id: int) -> HttpResponse:
@@ -616,7 +616,7 @@ def stages(request: HttpRequest) -> HttpResponse:
     else:
         form = StageForm()
 
-    return render(request, 'stages.html', {'form': form, 'stages': stages})
+    return render(request, 'stages.html', {'form': form, 'data': stages, 'type': 'stage', 'delete_url': 'remove_stages'})
 
 @staff_member_required
 def remove_stages(_request: HttpRequest, id: int) -> HttpResponse:
@@ -678,7 +678,7 @@ def productGroups(request: HttpRequest) -> HttpResponse:
     else:
         form = ProductGroupForm()
 
-    return render(request, 'productGroups.html', {'form': form, 'productGroups': groups})
+    return render(request, 'productGroups.html', {'form': form, 'data': groups, 'type': 'productGroups', 'delete_url': 'remove_product_group'})
 
 @staff_member_required
 def remove_product_groups(_request: HttpRequest, id: int) -> HttpResponse:
@@ -740,7 +740,7 @@ def status(request: HttpRequest) -> HttpResponse:
     else:
         form = StatusForm()
 
-    return render(request, 'status.html', {'form': form, 'status': status})
+    return render(request, 'status.html', {'form': form, 'data': status, 'type': 'status', 'delete_url': 'remove_status'})
 
 @staff_member_required
 def remove_status(_request: HttpRequest, id: int) -> HttpResponse:
@@ -802,7 +802,7 @@ def grower(request: HttpRequest) -> HttpResponse:
     else:
         form = GrowerForm()
 
-    return render(request, 'grower.html', {'form': form, 'growers': growers})
+    return render(request, 'grower.html', {'form': form, 'data': growers, 'delete_url': 'remove_grower', 'type': 'grower'})
 
 @staff_member_required
 def remove_grower(_request: HttpRequest, id: int) -> HttpResponse:
@@ -864,7 +864,7 @@ def industry(request: HttpRequest) -> HttpResponse:
     else:
         form = IndustryForm()
 
-    return render(request, 'industry.html', {'form': form, 'industries': industries})
+    return render(request, 'industry.html', {'form': form, 'data': industries, 'type': 'industries', 'delete_url': 'remove_industry'})
 
 @staff_member_required
 def remove_industry(_request: HttpRequest, id: int) -> HttpResponse:
