@@ -16,6 +16,7 @@ from .forms import FilterStakeholderGroupForm
 from .forms import FilterStageForm
 from .forms import FilterProductGroupForm
 from .forms import FilterSolutionForm
+from .forms import ResourceForm
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -27,6 +28,7 @@ from .models import PendingChanges
 from .models import Grower
 from .models import Industry
 from .models import Status
+from .models import Resources
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -48,7 +50,9 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
-    return render(request, 'home.html')
+    articles = Resources.objects.filter(type="article").all()
+
+    return render(request, 'home.html', {'articles': articles})
 
 def about(request: HttpRequest) -> HttpResponse:
     """
@@ -931,3 +935,76 @@ def map(request: HttpRequest) -> HttpResponse:
     """
 
     return render(request, 'map.html')
+
+@staff_member_required
+def admin_tools(request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Logic for letting site admins control content displayed on common pages
+      - About
+      - Contribute
+      - Home Page
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response rendering admin tools template
+    """
+    resources = Resources.objects.order_by("type").all()
+    
+    if request.method == "POST":
+        form = ResourceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/admin_tools')
+    
+    form = ResourceForm()
+
+    return render(request, 'admin_tools.html', {'data': resources, 'form': form})
+
+@staff_member_required
+def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Delete a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be deleted
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    resource.delete()
+    messages.info(request, 'Resource successfully deleted')
+
+    return redirect('/admin_tools')
+
+@staff_member_required
+def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Edit a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be edited
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    form = ResourceForm(request.POST, instance=resource)
+    if request.POST and form.is_valid():
+        resource_edit = form.save(commit=False)
+        for field in resource._meta.fields:
+            if not field.primary_key:
+                setattr(resource, field.name, getattr(resource_edit, field.name))
+        resource.save()
+        messages.info(request, 'Resource successfully edited')
+        return redirect('/admin_tools')  # Redirect to a success page
+    else:
+        form = ResourceForm(instance=resource)
+    
+    return render(request, 'edit_resource.html', {'form': form, 'resource': resource})
