@@ -13,6 +13,9 @@ urlpatterns = [
     # Contribute
     path("contribute/", views.contribute),
 
+    # Hemp Map
+    path("map/", views.map),
+
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/<int:id>', views.view_company, name='company-view'),
