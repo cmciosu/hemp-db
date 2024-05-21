@@ -1,0 +1,22 @@
+{% extends "master.html" %}
+
+{% block title %}
+  HempDB - Map
+{% endblock %}
+
+{% block content %}
+  <h3 class="d-flex justify-content-center mt-2">2024 Fiber, Grain, and Chemical Hemp Processors Interactive Map</h3>
+  <hr />
+  <style>
+    .embed-container iframe {
+      width: 75vw;
+      height: 75vh;
+      position: absolute;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    } 
+  </style>
+  <div class="embed-container d-flex justify-content-center vw-75 vh-75">
+    <iframe scrolling="no" frameborder="0" title="2024 Fiber, Grain, and Chemical Hemp Processors" src="//osugisci.maps.arcgis.com/apps/Embed/index.html?webmap=bd699766f9db4b1d9ee681662520c4a6&extent=-130.7046,35.2745,-87.9898,57.6995&zoom=true&previewImage=false&scale=true&disable_scroll=true&theme=light"></iframe>
+  </div>
+{% endblock %}

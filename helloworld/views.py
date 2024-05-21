@@ -918,3 +918,16 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     changes = PendingChanges.objects.all()
     
     return render(request, 'companies_pending.html', {'changes': changes})
+
+def map(request: HttpRequest) -> HttpResponse:
+    """
+    Public route. Shows the Hemp Map made by Cherish Despain
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response rendering map template
+    """
+
+    return render(request, 'map.html')
