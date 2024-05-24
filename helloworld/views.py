@@ -51,8 +51,10 @@ def index(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing home page template
     """
     articles = Resources.objects.filter(type="article").all()
+    title = Resources.objects.filter(type="home_title").first()
+    home_text = Resources.objects.filter(type="home_text").first()
 
-    return render(request, 'home.html', {'articles': articles})
+    return render(request, 'home.html', {'articles': articles, 'title': title.title, 'home_text': home_text.text })
 
 def about(request: HttpRequest) -> HttpResponse:
     """
@@ -64,7 +66,9 @@ def about(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing about page template
     """
-    return render(request, 'about.html')
+    about = Resources.objects.filter(type="about").first()
+
+    return render(request, 'about.html', {'about': about.text})
 
 def contribute(request: HttpRequest) -> HttpResponse:
     """
@@ -76,7 +80,10 @@ def contribute(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing contribute page template
     """
-    return render(request, 'contribute.html')
+    text = Resources.objects.filter(type="contribute").first()
+    contact = Resources.objects.filter(type="contribute_contact").first()
+
+    return render(request, 'contribute.html', {'text': text.text, 'contact': contact.text})
 
 def register(request: HttpRequest) -> HttpResponse:
     """
