@@ -7,25 +7,22 @@
 
 {% block content %}
 
-{% if messages %}
-  <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
-    {% endfor %}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-{% endif %}
+  {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
+      {% endfor %}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endif %}
 
   <div style="margin: 25px 45px;">
     <h1 class="fs-1" style="margin-bottom: 20px; display: flex; justify-content: center;">
-      Industrial Hemp Stakeholder Database
+      {{ title }}
     </h1>
     <div style="display: grid; justify-content: center;">
-      <p class="text-wrap fs-6" style="width: 40vw;">
-        The Industrial Hemp Stakeholder Database is a project developed by the Oregon State University College of Business’s Center for Marketing and Consumer Insight in collaboration with the USDA.  The goal is to bring visibility to the hemp industry for companies, farmers, handlers, distributors, and the general population alike.
-      </p>
-      <p class="text-wrap fs-6" style="width: 40vw;">
-        The development of the Industrial Hemp Database (IHDB) is supported by USDA AFRI SAS Grant# 2021-68012-35957.
+      <p class="text-wrap fs-6" style="width: 40vw; white-space:">
+        {{ home_text|linebreaks }}
       </p>
     </div>
     <div style="display: flex; justify-content: center; gap: 15px;">
@@ -40,5 +37,16 @@
       </a>
     </div>
     <hr />
+  </div>
+  <h3 class="d-flex justify-content-center"> Resources </h3>
+  <div class="d-flex flex-row m-5 gap-5 overflow-scroll"> 
+    {% for article in articles %}
+      <a href="{{ article.url }}" target="_blank" rel="noreferrer" class="card text-decoration-none overflow-x-scroll" style="min-width: 25vw;">
+        <div class="card-body">
+          <h5 class="card-title">{{article.title}}</h5>
+          <p class="card-text"> {{article.text}} </p>
+        </div>
+      </a>
+    {% endfor %}
   </div>
 {% endblock %}
