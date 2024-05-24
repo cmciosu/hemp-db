@@ -11,10 +11,69 @@ from .models import ProductGroup
 from .models import Grower
 from .models import Industry
 from .models import Status
+from .models import Resources
+
+class ResourceForm(forms.ModelForm):
+    CHOICES = (
+        ('about', 'About Page Text'),
+        ('contribute', 'Contribute Text'),
+        ('contribute_contact', 'Contribute Contact'),
+        ('article', 'Article'),
+        ('home_text', 'Home Page Text'),
+        ('home_title', 'Home Page Title')
+    )
+
+    type = forms.ChoiceField(choices=CHOICES,
+                             widget=forms.RadioSelect,
+                             required = True)
+    text = forms.CharField(widget=forms.Textarea, required=False)
+
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
 
+    class Meta:
+        model = Resources
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+class FilterStatusForm(forms.Form):
+    status = forms.ModelMultipleChoiceField(queryset=Status.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+    
+class FilterIndustryForm(forms.Form):
+    industry = forms.ModelMultipleChoiceField(queryset=Industry.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterCategoryForm(forms.Form):
+    category = forms.ModelMultipleChoiceField(queryset=Category.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterStakeholderGroupForm(forms.Form):
+    stakeholder_groups = forms.ModelMultipleChoiceField(queryset=stakeholderGroups.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterStageForm(forms.Form):
+    stage = forms.ModelMultipleChoiceField(queryset=Stage.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterProductGroupForm(forms.Form):
+    product_group = forms.ModelMultipleChoiceField(queryset=ProductGroup.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterSolutionForm(forms.Form):
+    solution = forms.ModelMultipleChoiceField(queryset=Solution.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+    
 class SearchForm(forms.Form):
     q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
 

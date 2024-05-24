@@ -16,6 +16,14 @@ urlpatterns = [
     # File Upload
     path("upload/", views.upload_file, name="upload"),
     
+    # Hemp Map
+    path("map/", views.map),
+
+    # Admin Tools
+    path("admin_tools/", views.admin_tools),
+    path("remove_resource/<int:id>", views.remove_resource),
+    path("edit_resource/<int:id>", views.edit_resource, name="edit-resource"),
+
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/<int:id>', views.view_company, name='company-view'),

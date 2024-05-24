@@ -32,12 +32,15 @@
               {% endif %}
             </div>
           </li>
+          <li class="nav-item">
+            <a class="nav-link link-light px-3 text-light" href="/map">Map</a>
+          </li>
           {% if user.is_staff %}
             <li class="nav-item">
-              <a class="nav-link link-light px-4 text-light" href="/changes">Changes</a>
+              <a class="nav-link link-light px-3 text-light" href="/changes">Changes</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link link-light px-4 text-light" href="/">Admin</a>
+              <a class="nav-link link-light px-3 text-light" href="/admin_tools">Admin Tools</a>
             </li>
           {% endif %}
         </ul>

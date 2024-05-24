@@ -10,6 +10,14 @@ from .forms import GrowerForm
 from .forms import IndustryForm
 from .forms import StatusForm
 from .forms import UploadFileForm
+from .forms import FilterStatusForm
+from .forms import FilterIndustryForm
+from .forms import FilterCategoryForm
+from .forms import FilterStakeholderGroupForm
+from .forms import FilterStageForm
+from .forms import FilterProductGroupForm
+from .forms import FilterSolutionForm
+from .forms import ResourceForm
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -21,6 +29,7 @@ from .models import PendingChanges
 from .models import Grower
 from .models import Industry
 from .models import Status
+from .models import Resources
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -70,6 +79,8 @@ def upload_file(request: HttpRequest) -> HttpResponse:
     return render(request, "upload.html", {"form": form})
 
 
+PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
 def index(request: HttpRequest) -> HttpResponse:
     """
     Root path. Renders home page template
@@ -80,7 +91,11 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
-    return render(request, 'home.html')
+    articles = Resources.objects.filter(type="article").all()
+    title = Resources.objects.filter(type="home_title").first()
+    home_text = Resources.objects.filter(type="home_text").first()
+
+    return render(request, 'home.html', {'articles': articles, 'title': title.title, 'home_text': home_text.text })
 
 def about(request: HttpRequest) -> HttpResponse:
     """
@@ -92,7 +107,9 @@ def about(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing about page template
     """
-    return render(request, 'about.html')
+    about = Resources.objects.filter(type="about").first()
+
+    return render(request, 'about.html', {'about': about.text})
 
 def contribute(request: HttpRequest) -> HttpResponse:
     """
@@ -104,7 +121,10 @@ def contribute(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing contribute page template
     """
-    return render(request, 'contribute.html')
+    text = Resources.objects.filter(type="contribute").first()
+    contact = Resources.objects.filter(type="contribute_contact").first()
+
+    return render(request, 'contribute.html', {'text': text.text, 'contact': contact.text})
 
 def register(request: HttpRequest) -> HttpResponse:
     """
@@ -148,14 +168,11 @@ def companies(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing companies page template, PendingCompanyForm, SearchForm
     """
-    page = int(request.GET.get('page', 1))
-    if page < 1: 
-        lower = 0
-        upper = 50
-    lower = page * 50 - 50
-    upper = lower + 50
 
-    companies = Company.objects.filter(id__gte=lower, id__lte=upper).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+
+    page = int(request.GET.get('page', 1))
+    
+    companies = Company.objects.filter(Name__istartswith=PAGE_INDEX[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
     productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
@@ -173,6 +190,13 @@ def companies(request: HttpRequest) -> HttpResponse:
         form = PendingCompanyForm()
         uploadForm = UploadFileForm()
         searchForm = SearchForm()
+        filterStatusForm = FilterStatusForm()
+        filterIndustryForm = FilterIndustryForm()
+        filterCategoryForm = FilterCategoryForm()
+        filterStakeholderGroupForm = FilterStakeholderGroupForm()
+        filterStageForm = FilterStageForm()
+        filterProductGroupForm = FilterProductGroupForm()
+        filterSolutionForm = FilterSolutionForm()
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
@@ -180,7 +204,15 @@ def companies(request: HttpRequest) -> HttpResponse:
                                               'uploadForm': uploadForm,
                                               'companies': data,
                                               'searchForm': searchForm, 
-                                              'page': page
+                                              'page': page,
+                                              'page_index': PAGE_INDEX,
+                                              'filterStatusForm': filterStatusForm,
+                                              'filterIndustryForm': filterIndustryForm,
+                                              'filterCategoryForm': filterCategoryForm,
+                                              'filterStakeholderGroupForm': filterStakeholderGroupForm,
+                                              'filterStageForm': filterStageForm,
+                                              'filterProductGroupForm': filterProductGroupForm,
+                                              'filterSolutionForm': filterSolutionForm
                                               })
 
 @staff_member_required
@@ -323,7 +355,7 @@ def view_company_reject(_request: HttpRequest, changeType: str, id: int) -> Http
 def companies_filtered(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Basically does the same thing as the /companies route, except 
-    filters queryset based on SearchForm input. This route is also paginated (50 per page)
+    filters queryset based on SearchForm / Filter input.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
@@ -331,41 +363,65 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company page template and filtered company data
     """
-    page = int(request.GET.get('page', 1))
-    if page < 1: 
-        lower = 0
-        upper = 50
-    lower = page * 50 - 50
-    upper = lower + 50
-    query = request.GET.get('query', '')
-    # If query provided as url parameter, use that
-    if query != '':
-        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
-        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
-        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
-        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
-        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
-        form = PendingCompanyForm()
-        searchForm = SearchForm()
-        return render(request, 'companies.html', {'form': form, 'companies': companies, 'searchForm': searchForm, 'query': query, 'page': page})
-    # else if query provided by form submission, use that
-    else:
+    query = None
+    companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+    if "item-filter" in request.POST:
+        status_ids = request.POST.getlist("status")
+        industry_ids = request.POST.getlist("industry")
+        category_ids = request.POST.getlist("category")
+        stakeholder_group_ids = request.POST.getlist("stakeholder_groups")
+        stage_ids = request.POST.getlist("stage")
+        product_ids = request.POST.getlist("product_group")
+        solution_ids = request.POST.getlist("solution")
+        filter_lists = [
+            (status_ids, "Status"), 
+            (industry_ids, "Industry"), 
+            (category_ids, "Category"), 
+            (stakeholder_group_ids, "stakeholderGroup"),
+            (stage_ids, "Stage"),
+            (product_ids, "productGroup"),
+            (solution_ids, "Solutions")
+        ]
+        for lst, field in filter_lists:
+            if lst:
+                companies = companies.filter(**{f"{field}__in": lst})
+
+    if "company-search" in request.POST:
         form = SearchForm(request.POST)
-        query = form['q']
-        companies = Company.objects.filter(id__gte=lower, id__lte=upper, Name__contains=query.value()).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
-        solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
-        categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
-        productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
-        stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
-        stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
+        query = form["q"]
+        companies = companies.filter(Name__contains=query.value())
+    
+    solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
+    categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
+    productGroups = [company.productGroup.all()[:1][0] if len(company.productGroup.all()[:1]) > 0 else "--" for company in companies]
+    stakeholderGroups = [company.stakeholderGroup.all()[:1][0] if len(company.stakeholderGroup.all()[:1]) > 0 else "--" for company in companies]
+    stages = [company.Stage.all()[:1][0] if len(company.Stage.all()[:1]) > 0 else "--" for company in companies]
 
     form = PendingCompanyForm()
     searchForm = SearchForm()
+    filterStatusForm = FilterStatusForm()
+    filterIndustryForm = FilterIndustryForm()
+    filterCategoryForm = FilterCategoryForm()
+    filterStakeholderGroupForm = FilterStakeholderGroupForm()
+    filterStageForm = FilterStageForm()
+    filterProductGroupForm = FilterProductGroupForm()
+    filterSolutionForm = FilterSolutionForm()
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
-    return render(request, 'companies.html', {'form': form, 'companies': data, 'searchForm': searchForm, 'query': query.value(), 'page': page})
+    return render(request, 'companies.html', {'form': form, 
+                                              'companies': data, 
+                                              'searchForm': searchForm, 
+                                              'query': query.value() if query else None, 
+                                              'page_index': PAGE_INDEX,
+                                              'filterStatusForm': filterStatusForm,
+                                              'filterIndustryForm': filterIndustryForm,
+                                              'filterCategoryForm': filterCategoryForm,
+                                              'filterStakeholderGroupForm': filterStakeholderGroupForm,
+                                              'filterStageForm': filterStageForm,
+                                              'filterProductGroupForm': filterProductGroupForm,
+                                              'filterSolutionForm': filterSolutionForm
+                                              })
 
 @staff_member_required
 def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
@@ -428,7 +484,7 @@ def categories(request: HttpRequest) -> HttpResponse:
     else:
         form = CategoryForm()
 
-    return render(request, 'categories.html', {'form': form, 'categories': categories})
+    return render(request, 'categories.html', {'form': form, 'data': categories, 'type': 'category', 'delete_url': 'remove_categories'})
 
 @staff_member_required
 def remove_categories(_request: HttpRequest, id: int) -> HttpResponse:
@@ -490,7 +546,7 @@ def solutions(request: HttpRequest) -> HttpResponse:
     else:
         form = SolutionForm()
 
-    return render(request, 'solutions.html', {'form': form, 'solutions': solutions})
+    return render(request, 'solutions.html', {'form': form, 'data': solutions, 'type': 'solution', 'delete_url': 'remove_solutions'})
 
 @staff_member_required
 def remove_solutions(_request: HttpRequest, id: int):
@@ -552,7 +608,7 @@ def StakeholderGroups(request: HttpRequest) -> HttpResponse:
     else:
         form = stakeholderGroupsForm()
 
-    return render(request, 'stakeholderGroups.html', {'form': form, 'groups': groups})
+    return render(request, 'stakeholderGroups.html', {'form': form, 'type': 'stakeholderGroup', 'data': groups, 'delete_url': 'remove_stakeholder_groups' })
 
 @staff_member_required
 def remove_stakeholder_groups(_request: HttpRequest, id: int) -> HttpResponse:
@@ -614,7 +670,7 @@ def stages(request: HttpRequest) -> HttpResponse:
     else:
         form = StageForm()
 
-    return render(request, 'stages.html', {'form': form, 'stages': stages})
+    return render(request, 'stages.html', {'form': form, 'data': stages, 'type': 'stage', 'delete_url': 'remove_stages'})
 
 @staff_member_required
 def remove_stages(_request: HttpRequest, id: int) -> HttpResponse:
@@ -676,7 +732,7 @@ def productGroups(request: HttpRequest) -> HttpResponse:
     else:
         form = ProductGroupForm()
 
-    return render(request, 'productGroups.html', {'form': form, 'productGroups': groups})
+    return render(request, 'productGroups.html', {'form': form, 'data': groups, 'type': 'productGroups', 'delete_url': 'remove_product_group'})
 
 @staff_member_required
 def remove_product_groups(_request: HttpRequest, id: int) -> HttpResponse:
@@ -738,7 +794,7 @@ def status(request: HttpRequest) -> HttpResponse:
     else:
         form = StatusForm()
 
-    return render(request, 'status.html', {'form': form, 'status': status})
+    return render(request, 'status.html', {'form': form, 'data': status, 'type': 'status', 'delete_url': 'remove_status'})
 
 @staff_member_required
 def remove_status(_request: HttpRequest, id: int) -> HttpResponse:
@@ -800,7 +856,7 @@ def grower(request: HttpRequest) -> HttpResponse:
     else:
         form = GrowerForm()
 
-    return render(request, 'grower.html', {'form': form, 'growers': growers})
+    return render(request, 'grower.html', {'form': form, 'data': growers, 'delete_url': 'remove_grower', 'type': 'grower'})
 
 @staff_member_required
 def remove_grower(_request: HttpRequest, id: int) -> HttpResponse:
@@ -862,7 +918,7 @@ def industry(request: HttpRequest) -> HttpResponse:
     else:
         form = IndustryForm()
 
-    return render(request, 'industry.html', {'form': form, 'industries': industries})
+    return render(request, 'industry.html', {'form': form, 'data': industries, 'type': 'industries', 'delete_url': 'remove_industry'})
 
 @staff_member_required
 def remove_industry(_request: HttpRequest, id: int) -> HttpResponse:
@@ -916,3 +972,89 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     changes = PendingChanges.objects.all()
     
     return render(request, 'companies_pending.html', {'changes': changes})
+
+def map(request: HttpRequest) -> HttpResponse:
+    """
+    Public route. Shows the Hemp Map made by Cherish Despain
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response rendering map template
+    """
+
+    return render(request, 'map.html')
+
+@staff_member_required
+def admin_tools(request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Logic for letting site admins control content displayed on common pages
+      - About
+      - Contribute
+      - Home Page
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response rendering admin tools template
+    """
+    resources = Resources.objects.order_by("type").all()
+    
+    if request.method == "POST":
+        form = ResourceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/admin_tools')
+    
+    form = ResourceForm()
+
+    return render(request, 'admin_tools.html', {'data': resources, 'form': form})
+
+@staff_member_required
+def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Delete a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be deleted
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    resource.delete()
+    messages.info(request, 'Resource successfully deleted')
+
+    return redirect('/admin_tools')
+
+@staff_member_required
+def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Edit a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be edited
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    form = ResourceForm(request.POST, instance=resource)
+    if request.POST and form.is_valid():
+        resource_edit = form.save(commit=False)
+        for field in resource._meta.fields:
+            if not field.primary_key:
+                setattr(resource, field.name, getattr(resource_edit, field.name))
+        resource.save()
+        messages.info(request, 'Resource successfully edited')
+        return redirect('/admin_tools')  # Redirect to a success page
+    else:
+        form = ResourceForm(instance=resource)
+    
+    return render(request, 'edit_resource.html', {'form': form, 'resource': resource})
