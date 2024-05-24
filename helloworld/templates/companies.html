@@ -39,9 +39,18 @@
     {% endif %}
 
     <div class="d-flex justify-content-center gap-2 my-3">
+      <style>
+        .pagestyle {
+          transition: transform 0.2s ease-in-out;
+        }
+        .pagestyle:hover {
+          transform: scale(1.3);
+        }
+      </style>
+
 
       {% for page in page_index %}
-      <a style="text-decoration:none" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+      <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
       {% endfor %}
     </div>
     
@@ -163,9 +172,11 @@
   </div>
 
   </div>
-  <div style="display: flex; justify-content: center; gap: 5px;">
+
+  <div class="d-flex justify-content-center gap-2 mt-1">
+
     {% for page in page_index %}
-    <a style="text-decoration: none" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+    <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
     {% endfor %}
   </div>
 
