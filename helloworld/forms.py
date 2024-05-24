@@ -28,6 +28,10 @@ class ResourceForm(forms.ModelForm):
                              required = True)
     text = forms.CharField(widget=forms.Textarea, required=False)
 
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
+
     class Meta:
         model = Resources
         fields = "__all__"

@@ -12,7 +12,10 @@ urlpatterns = [
 
     # Contribute
     path("contribute/", views.contribute),
-
+    
+    # File Upload
+    path("upload/", views.upload_file, name="upload"),
+    
     # Hemp Map
     path("map/", views.map),
 
