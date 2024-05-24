@@ -28,16 +28,15 @@ class ResourceForm(forms.ModelForm):
                              required = True)
     text = forms.CharField(widget=forms.Textarea, required=False)
 
-
-class UploadFileForm(forms.Form):
-    file = forms.FileField()
-
     class Meta:
         model = Resources
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
     
 class FilterStatusForm(forms.Form):
     status = forms.ModelMultipleChoiceField(queryset=Status.objects.all(),
