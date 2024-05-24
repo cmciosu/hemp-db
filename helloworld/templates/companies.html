@@ -1,7 +1,7 @@
 {% extends "master.html" %}
 
 {% block title %}
-  Hemp Stakeholder Database
+  HempDB - Companies
 {% endblock %}
 
 {% block content %}
@@ -20,78 +20,86 @@
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
     <a href="{% url 'export-companies' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
+    <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
+      </svg>              
+    </button>
     {% endif %}
     
-    <div class="btn-group" role="group">
+    <div class="btn-group float-end mx-5" role="group">
       <form method="post" action="/companies/search/">
         {% csrf_token %}
         {{ searchForm.q }}
-        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit">Search</a>
+        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit" name="company-search">Search</a>
       </form>
     </div>
     {% if query %}
       <a class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="{%url 'companies'%}"> {{ query }} x</a>
     {% endif %}
-    {% if query %}
-      {% if page > 1 %}
-          <a href="/companies/search/?page={{ page|add:"-1" }}&query={{ query }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Previous Page </a>
-        {% else %}
-          <a href="/companies/search/?page={{ page|add:"-1" }}&query={{ query }}" class="btn btn-secondary disabled rounded-pill mx-3 my-2 px-3"> Previous Page </a>
-      {% endif %}
-      <a href="/companies/search/?page={{ page|add:"1" }}&query={{ query }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Next Page </a>
-    {% else %}
-      {% if page > 1 %}
-          <a href="/companies/?page={{ page|add:"-1" }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Previous Page </a>
-        {% else %}
-          <a href="/companies/?page={{ page|add:"-1" }}" class="btn btn-secondary disabled rounded-pill mx-3 my-2 px-3"> Previous Page </a>
-      {% endif %}
-      <a href="/companies/?page={{ page|add:"1" }}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3"> Next Page </a>
-    {% endif %}
-</div>
 
-  <table class="table table-striped table-sm">
+    <div class="d-flex justify-content-center gap-2 my-3">
+      <style>
+        .pagestyle {
+          transition: transform 0.2s ease-in-out;
+        }
+        .pagestyle:hover {
+          transform: scale(1.3);
+        }
+      </style>
+
+
+      {% for page in page_index %}
+      <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+      {% endfor %}
+    </div>
+    
+</div>
+  <table class="table table-bordered border-success table-sm">
     <thead>
       <tr>
-        <th scope="col">   </th>
         <th scope="col">Company Name</th>
         <th scope="col">Status</th>
         <th scope="col">Industry</th>
         <th scope="col">Stakeholder Category</th>
         <th scope="col">Stakeholder Group</th>
-        <th scope="col">Stage</th>
+        <th scope="col">Development Stage</th>
         <th scope="col">Product Group</th>
         <th scope="col">Description</th>
         <th scope="col">Solution</th>
+        {%if user.is_staff %}
+          <th scope="col">Actions</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
-      {% comment %} This apparently caches the QuerySet {% endcomment %}
-      {% with cachedCompanies=companies %}
-        {% for company in cachedCompanies %}
-          <tr>
-            <th scope="row"><inputt class="form-check-inputt" type="checkbox" value="" id="flexCheckDefault"></th>
-            <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
-            <td style="{% if company.Status.status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status.status }}</b></td>
-            <td>{{ company.Industry.industry }}</td>
-            <td>{{ company.Category.category }}</td>
-            <td>{{ company.stakeholderGroup.stakeholderGroup }}</td>
-            <td>{{ company.Stage.stage }}</td>
-            <td>{{ company.productGroup.productGroup }}</td>
-            <td>{{ company.Description|truncatechars:100 }}</td>
-            <td>{{ company.Solutions.solution }}</td>
-
-
-            <td><a href="{% url 'edit-company' company.id %}" class="btn btn-secondary">Edit</a></td>
-            <td><a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
-              <!-- Delete -->
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-              </svg>
-            </a></td>
-          </tr>
-        {% endfor %}
-      {% endwith %}
+      {% for company, solution, category, productgroup, stakeholdergroup, stages in companies %}
+        <tr>
+          <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
+          <td style="{% if company.Status.status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status.status }}</b></td>
+          <td>{{ company.Industry.industry }}</td>
+          <td>{{ category }}</td>
+          <td>{{ stakeholdergroup }}</td>
+          <td>{{ stages }}</td>
+          <td>{{ productgroup }}</td>
+          <td>{{ company.Description|truncatechars:100 }}</td>
+          <td>{{ solution }}</td>
+          {%if user.is_staff %}
+            <td>
+              <div style="display: flex; gap: 5px;">
+                <a href="{% url 'edit-company' company.id %}" class="btn btn-secondary">Edit</a>
+                <a type="button" class="btn btn-danger" href="/remove_companies/{{ company.id }}"> 
+                <!-- Delete -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+                </svg>
+                </a>
+              </div>
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
     </tbody>
   </table>
 
@@ -138,7 +146,6 @@
             <button type="button" class="btn btn-danger" data-bs-dismiss="modal" style="float: right; margin: 5px;">Close</button>
           </div>
         </form>
-
       </div>
     </div>
   </div>
@@ -146,12 +153,10 @@
   <div class="modal" id="importModal">
     <div class="modal-dialog">
       <div class="modal-content">
-
         <div class="modal-header">
           <h4 class="modal-title">Import</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-  
         <div class="modal-body">
           Select file: 
           <form method="post" enctype="multipart/form-data">
@@ -159,11 +164,46 @@
             <button type="submit">Upload File</button>
           </form>
         </div>
-  
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="d-flex justify-content-center gap-2 mt-1">
+
+    {% for page in page_index %}
+    <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+    {% endfor %}
+  </div>
+
+  <div class="modal" id="filterModal">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
   
+        <div class="modal-header">
+          <h4 class="modal-title">Filter Companies</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <form method="post" action="/companies/search/">
+            {% csrf_token %}
+            <div class="d-block gap-3">
+              {{ filterStatusForm.as_p }}
+              {{ filterIndustryForm.as_p }}
+              {{ filterCategoryForm.as_p }}
+              {{ filterStakeholderGroupForm.as_p }}
+              {{ filterStageForm.as_p }}
+              {{ filterProductGroupForm.as_p }}
+              {{ filterSolutionForm.as_p }}
+            </div>
+            <button class="float-end btn btn-secondary rounded-pill" type="submit" name="item-filter">Submit</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>

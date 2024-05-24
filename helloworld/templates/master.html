@@ -5,8 +5,9 @@
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap">
   </head>
-  <main style="display: flex; flex-direction: column; min-height: 100vh; margin: 0;">
+  <main style="display: flex; flex-direction: column; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif;">
     <nav class="navbar navbar-expand-sm bg-success bg-gradient bg-subtle navbar-dark">
       <div class="container-fluid">
         <ul class="navbar-nav">
@@ -31,9 +32,15 @@
               {% endif %}
             </div>
           </li>
+          <li class="nav-item">
+            <a class="nav-link link-light px-3 text-light" href="/map">Map</a>
+          </li>
           {% if user.is_staff %}
             <li class="nav-item">
-              <a class="nav-link link-light px-4 text-light" href="/changes">Changes</a>
+              <a class="nav-link link-light px-3 text-light" href="/changes">Changes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link link-light px-3 text-light" href="/">Admin</a>
             </li>
           {% endif %}
         </ul>
@@ -55,7 +62,7 @@
       </div>
     </nav>
     
-    <body style="flex: 1;">
+    <body style="flex: 1; font-family: 'Inter', sans-serif;" class="bg-light bg-gradient">
       {% block content %}
       {% endblock %}
     </body>

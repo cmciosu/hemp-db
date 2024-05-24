@@ -1,8 +1,6 @@
-## Django
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-## Models
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -13,7 +11,42 @@ from .models import ProductGroup
 from .models import Grower
 from .models import Industry
 from .models import Status
+    
+class FilterStatusForm(forms.Form):
+    status = forms.ModelMultipleChoiceField(queryset=Status.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+    
+class FilterIndustryForm(forms.Form):
+    industry = forms.ModelMultipleChoiceField(queryset=Industry.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
 
+class FilterCategoryForm(forms.Form):
+    category = forms.ModelMultipleChoiceField(queryset=Category.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterStakeholderGroupForm(forms.Form):
+    stakeholder_groups = forms.ModelMultipleChoiceField(queryset=stakeholderGroups.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterStageForm(forms.Form):
+    stage = forms.ModelMultipleChoiceField(queryset=Stage.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterProductGroupForm(forms.Form):
+    product_group = forms.ModelMultipleChoiceField(queryset=ProductGroup.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+
+class FilterSolutionForm(forms.Form):
+    solution = forms.ModelMultipleChoiceField(queryset=Solution.objects.all(),
+                                              widget=forms.CheckboxSelectMultiple,
+                                              required=True)
+    
 class SearchForm(forms.Form):
     q = forms.CharField(label='Search', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Search by Name'}))
 
@@ -32,28 +65,27 @@ class PendingCompanyForm(forms.ModelForm):
     Solutions = forms.ModelMultipleChoiceField(
             queryset=Solution.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     Category = forms.ModelMultipleChoiceField(
             queryset=Category.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     stakeholderGroup = forms.ModelMultipleChoiceField(
             queryset=stakeholderGroups.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     Stage = forms.ModelMultipleChoiceField(
             queryset=Stage.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
     productGroup = forms.ModelMultipleChoiceField(
             queryset=ProductGroup.objects.all(),
             widget=forms.CheckboxSelectMultiple,
-            required=True)
+            required=False)
 
     class Meta:
         model = PendingCompany
         fields = "__all__"
-        # exclude = ["Solutions", "Category", "stakeholderGroup", "Stage", "productGroup"]
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
