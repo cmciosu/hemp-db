@@ -27,7 +27,7 @@
     </button>
     {% endif %}
     
-    <div class="btn-group mx-5" role="group">
+    <div class="btn-group float-end mx-5" role="group">
       <form method="post" action="/companies/search/">
         {% csrf_token %}
         {{ searchForm.q }}
@@ -37,10 +37,14 @@
     {% if query %}
       <a class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="{%url 'companies'%}"> {{ query }} x</a>
     {% endif %}
+
+    <div class="d-flex justify-content-center gap-2 my-3">
+
+      {% for page in page_index %}
+      <a style="text-decoration:none" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+      {% endfor %}
+    </div>
     
-    {% for page in page_index %}
-      <a href="/companies/?page={{ forloop.counter }}" style="gap: 10px;"> {{page}} </a>
-    {% endfor %}
 </div>
   <table class="table table-bordered border-success table-sm">
     <thead>
@@ -161,7 +165,7 @@
   </div>
   <div style="display: flex; justify-content: center; gap: 5px;">
     {% for page in page_index %}
-    <a href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+    <a style="text-decoration: none" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
     {% endfor %}
   </div>
 
