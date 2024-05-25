@@ -65,8 +65,8 @@ def upload_file(request: HttpRequest) -> HttpResponse:
                     frame["Status"] = Status.objects.get(id = frame["Status"])
                     frame["Industry"] = Industry.objects.get(id = frame["Industry"])
                     frame["Grower"] = Grower.objects.get(id = frame["Grower"])
-                    model = Company(**frame)
-                    model.save()
+                    # model = Company(**frame)
+                    # model.save()
                 messages.info(request, 'File Data Successfully Uploaded')
                 return redirect("/companies")
         except:  # noqa: E722
