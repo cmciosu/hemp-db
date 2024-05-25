@@ -1,9 +1,3 @@
----
-title: Build Documentation
-layout: template
-filename: BUILD.md
---- 
-
 # Build Pipeline
 
 ### This document contains information on the build pipeline for HempDB. This documentation is intended for developers.
