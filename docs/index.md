@@ -2,11 +2,11 @@
 
 ## Documentation intended for Developers
 
-- [Developing](/docs/DEVELOP.md)
-- [Build & CI/CD](/docs/BUILD.md)
-- [Infrastructure](/docs/INFRA.md)
-- [File Strcture](/docs/FILES.md)
-- [DB Relations & Schema](/docs/MODELS.md)
+- [Developing](DEVELOP.md)
+- [Build & CI/CD](BUILD.md)
+- [Infrastructure](INFRA.md)
+- [File Strcture](FILES.md)
+- [DB Relations & Schema](MODELS.md)
 
 ## Documentation intended for End Users
 
