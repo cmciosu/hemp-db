@@ -10,8 +10,4 @@ For the checks to pass, the code must be linted, all migrations must run success
 
 ## Vercel
 
-Vercel runs [build.sh](/build.sh) for the build step. For this to pass, just make sure all dependencies are listed in [requirements.txt](/requirements.txt) and all versions are correct. 
-
-## 
-
-These two steps were separated to speed up build time in vercel for non-production builds
+Vercel runs [build.sh](/build.sh) for the build step. For this to pass, just make sure all dependencies are listed in [requirements.txt](/requirements.txt) and all versions are correct.

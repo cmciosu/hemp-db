@@ -10,4 +10,4 @@
 
 ## Documentation intended for End Users
 
-Coming Soon
+- [CMCI Users (Admins)](ADMIN.md)
