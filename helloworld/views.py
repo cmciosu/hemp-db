@@ -9,6 +9,7 @@ from .forms import SearchForm
 from .forms import GrowerForm
 from .forms import IndustryForm
 from .forms import StatusForm
+from .forms import UploadFileForm
 from .forms import FilterStatusForm
 from .forms import FilterIndustryForm
 from .forms import FilterCategoryForm
@@ -16,6 +17,7 @@ from .forms import FilterStakeholderGroupForm
 from .forms import FilterStageForm
 from .forms import FilterProductGroupForm
 from .forms import FilterSolutionForm
+from .forms import ResourceForm
 from .models import Company
 from .models import PendingCompany
 from .models import Category
@@ -27,6 +29,7 @@ from .models import PendingChanges
 from .models import Grower
 from .models import Industry
 from .models import Status
+from .models import Resources
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -35,6 +38,46 @@ from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
 import csv
+import pandas as pd
+import numpy as np
+
+@staff_member_required
+def upload_file(request: HttpRequest) -> HttpResponse:
+    """
+    Staff route. Should only be used in emergencies (not secure). 
+    Uses pandas to parse uploaded file, saves company data straight to Companies table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request containing file
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to companies page template
+    """
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        try:
+            if form.is_valid():
+                file = request.FILES["file"]
+                df = pd.read_csv(file)
+                df = df.replace({np.nan: ''})
+                frames = df.to_dict("records")
+                for frame in frames:
+                    frame["Status"] = Status.objects.get(id = frame["Status"])
+                    frame["Industry"] = Industry.objects.get(id = frame["Industry"])
+                    frame["Grower"] = Grower.objects.get(id = frame["Grower"])
+                    # model = Company(**frame)
+                    # model.save()
+                messages.info(request, 'File Data Successfully Uploaded')
+                return redirect("/companies")
+        except:  # noqa: E722
+            messages.error(request, 'There was an error with the file upload') 
+            return redirect("/companies")
+                
+    else:
+        form = UploadFileForm()
+
+    return render(request, "upload.html", {"form": form})
+
 
 PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
@@ -48,7 +91,11 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
-    return render(request, 'home.html')
+    articles = Resources.objects.filter(type="article").all()
+    title = Resources.objects.filter(type="home_title").first()
+    home_text = Resources.objects.filter(type="home_text").first()
+
+    return render(request, 'home.html', {'articles': articles, 'title': title.title, 'home_text': home_text.text })
 
 def about(request: HttpRequest) -> HttpResponse:
     """
@@ -60,7 +107,9 @@ def about(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing about page template
     """
-    return render(request, 'about.html')
+    about = Resources.objects.filter(type="about").first()
+
+    return render(request, 'about.html', {'about': about.text})
 
 def contribute(request: HttpRequest) -> HttpResponse:
     """
@@ -72,7 +121,10 @@ def contribute(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing contribute page template
     """
-    return render(request, 'contribute.html')
+    text = Resources.objects.filter(type="contribute").first()
+    contact = Resources.objects.filter(type="contribute_contact").first()
+
+    return render(request, 'contribute.html', {'text': text.text, 'contact': contact.text})
 
 def register(request: HttpRequest) -> HttpResponse:
     """
@@ -136,6 +188,7 @@ def companies(request: HttpRequest) -> HttpResponse:
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
+        uploadForm = UploadFileForm()
         searchForm = SearchForm()
         filterStatusForm = FilterStatusForm()
         filterIndustryForm = FilterIndustryForm()
@@ -148,6 +201,7 @@ def companies(request: HttpRequest) -> HttpResponse:
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
     return render(request, 'companies.html', {'form': form,
+                                              'uploadForm': uploadForm,
                                               'companies': data,
                                               'searchForm': searchForm, 
                                               'page': page,
@@ -931,3 +985,76 @@ def map(request: HttpRequest) -> HttpResponse:
     """
 
     return render(request, 'map.html')
+
+@staff_member_required
+def admin_tools(request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Logic for letting site admins control content displayed on common pages
+      - About
+      - Contribute
+      - Home Page
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response rendering admin tools template
+    """
+    resources = Resources.objects.order_by("type").all()
+    
+    if request.method == "POST":
+        form = ResourceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/admin_tools')
+    
+    form = ResourceForm()
+
+    return render(request, 'admin_tools.html', {'data': resources, 'form': form})
+
+@staff_member_required
+def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Delete a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be deleted
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    resource.delete()
+    messages.info(request, 'Resource successfully deleted')
+
+    return redirect('/admin_tools')
+
+@staff_member_required
+def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    Staff Route. Edit a resource from the Resources table
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    id (int): id of Resource to be edited
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting admin tools remplate
+    """
+
+    resource = Resources.objects.get(id = id)
+    form = ResourceForm(request.POST, instance=resource)
+    if request.POST and form.is_valid():
+        resource_edit = form.save(commit=False)
+        for field in resource._meta.fields:
+            if not field.primary_key:
+                setattr(resource, field.name, getattr(resource_edit, field.name))
+        resource.save()
+        messages.info(request, 'Resource successfully edited')
+        return redirect('/admin_tools')  # Redirect to a success page
+    else:
+        form = ResourceForm(instance=resource)
+    
+    return render(request, 'edit_resource.html', {'form': form, 'resource': resource})

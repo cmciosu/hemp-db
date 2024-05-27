@@ -1,5 +1,15 @@
 from django.db import models
 
+class Resources(models.Model):
+    type = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    url = models.CharField(max_length=1024, blank=True)
+    text = models.CharField(max_length=2048, blank=True)
+    image = models.CharField(max_length=1024, blank=True)
+
+    class Meta:
+        db_table = "Resources"
+
 class Solution(models.Model):
     solution = models.CharField(max_length=1024)
     

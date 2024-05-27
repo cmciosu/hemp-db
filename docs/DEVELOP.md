@@ -3,38 +3,44 @@
 ## Local Setup
 
 1. Clone repository
-2. `cp .env.example .env`
-3. Add credentials to .env file
-4. `docker build -t hempdb .`
-5. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`    `Note: If using powershell use {pwd} instead of (pwd)`
-6. Open http://localhost:8000
+2. Set up .env
+  * `cp .env.example .env`
+  * Add credentials to .env file
+
+3. Build the docker image
+  * `docker build -t hempdb .`
+
+4. Start Docker container
+  * Mac/Linux: `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`    
+  * Windows: `docker run --name hempdb-dev -it -p 8000:8000 -v ${pwd}:/code hempdb`
+  * If container already exists: `docker start -a -i hempdb-dev`
+  * To remove duplicate container: `docker rm hempdb-dev`
+
+5. Open http://localhost:8000
 
 ## Local Development
 
 1. Checkout new branch
-2. `docker build -t hempdb .`
-3. `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`     `Note: If using powershell use {pwd} instead of (pwd)`
-Note:
-* if container already exists, run `docker start -a -i hempdb-dev` 
-5. Develop Features
+  * `git checkout -b "<feature_name>"`
 
-**no need to restart docker, local code will be synced up with code in container. Just code, ctrl + s, see changes in browser**
+2. Develop feature
+  * For migrations, run:
+  * `docker exec -it hempdb-dev bash`
+  * `python manage.py makemigrations`
+  * `python manage.py migrate`
+  * For new env vars, add to .env, .env.example, and vercel
+  * Make sure to add any new dependencies to requirements.txt
 
-6. Lint with `ruff check .`
-6.a Fix with `ruff check . --fix`
+3. Lint with `ruff check .`
+  * fix with `ruff check . --fix`
 
-7. Open PR to dev
+4. Open PR to dev
 
-Make sure to add any new dependencies to requirements.txt
-
-For migrations, run
-1. `docker exec -it hempdb-dev bash`
-2. `python manage.py makemigrations`
-3. `python manage.py migrate`
-
-For new env vars, add to .env, .env.example, and vercel
+**Container does not need to be manually restarted with every code change, django uses StatReloader to auto-reload the code**
 
 ## Deploy to Production
+
+1. Open PR dev -> main
 
 ### ⚠️⚠️⚠️ Make sure Debug is set to False ⚠️⚠️⚠️
 

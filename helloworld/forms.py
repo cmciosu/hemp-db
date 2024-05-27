@@ -11,6 +11,32 @@ from .models import ProductGroup
 from .models import Grower
 from .models import Industry
 from .models import Status
+from .models import Resources
+
+class ResourceForm(forms.ModelForm):
+    CHOICES = (
+        ('about', 'About Page Text'),
+        ('contribute', 'Contribute Text'),
+        ('contribute_contact', 'Contribute Contact'),
+        ('article', 'Article'),
+        ('home_text', 'Home Page Text'),
+        ('home_title', 'Home Page Title')
+    )
+
+    type = forms.ChoiceField(choices=CHOICES,
+                             widget=forms.RadioSelect,
+                             required = True)
+    text = forms.CharField(widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = Resources
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
     
 class FilterStatusForm(forms.Form):
     status = forms.ModelMultipleChoiceField(queryset=Status.objects.all(),
