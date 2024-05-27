@@ -10,4 +10,5 @@
 
 ## Documentation intended for End Users
 
+- [Public Users](USER.md)
 - [CMCI Users (Admins)](ADMIN.md)
