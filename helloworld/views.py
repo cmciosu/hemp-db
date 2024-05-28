@@ -41,6 +41,9 @@ import csv
 import pandas as pd
 import numpy as np
 
+# Used for Pagination Bar on /companies
+PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
 @staff_member_required
 def upload_file(request: HttpRequest) -> HttpResponse:
     """
@@ -78,9 +81,6 @@ def upload_file(request: HttpRequest) -> HttpResponse:
 
     return render(request, "upload.html", {"form": form})
 
-
-PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-
 def index(request: HttpRequest) -> HttpResponse:
     """
     Root path. Renders home page template
@@ -95,7 +95,9 @@ def index(request: HttpRequest) -> HttpResponse:
     title = Resources.objects.filter(type="home_title").first()
     home_text = Resources.objects.filter(type="home_text").first()
 
-    return render(request, 'home.html', {'articles': articles, 'title': title.title, 'home_text': home_text.text })
+    return render(request, 'home.html', {'articles': articles, 
+                                         'title': title.title if title else "", 
+                                         'home_text': home_text.text if home_text else "" })
 
 def about(request: HttpRequest) -> HttpResponse:
     """
@@ -109,7 +111,7 @@ def about(request: HttpRequest) -> HttpResponse:
     """
     about = Resources.objects.filter(type="about").first()
 
-    return render(request, 'about.html', {'about': about.text})
+    return render(request, 'about.html', {'about': about.text if about else ""})
 
 def contribute(request: HttpRequest) -> HttpResponse:
     """
@@ -124,7 +126,10 @@ def contribute(request: HttpRequest) -> HttpResponse:
     text = Resources.objects.filter(type="contribute").first()
     contact = Resources.objects.filter(type="contribute_contact").first()
 
-    return render(request, 'contribute.html', {'text': text.text, 'contact': contact.text})
+
+
+    return render(request, 'contribute.html', {'text': text.text if text else "", 
+                                               'contact': contact.text if contact else ""})
 
 def register(request: HttpRequest) -> HttpResponse:
     """
