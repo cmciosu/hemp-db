@@ -264,29 +264,29 @@ def view_company(request: HttpRequest, id: int) -> HttpResponse:
     return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
 @staff_member_required
-def view_company_pending(request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     """
     Staff Route. Shows all column values for a single pending company, 
     as well as its change type
 
     Parameters:
     request (HttpRequest): incoming HTTP request
-    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
-    id (int): id of company being viewed
+    id (int): id of change being viewed
 
     Returns:
     response (HttpResponse): HTTP response containing company view page template and company data as dict
     """
-    if changeType == 'deletion':
+    change = PendingChanges.objects.get(id=id)
+    if change.changeType == 'deletion':
         company = Company.objects.get(id = id)
-    if changeType == 'create' or changeType == 'edit':
+    if change.changeType == 'create' or change.changeType == 'edit':
         company = PendingCompany.objects.get(id = id)    
     obj = model_to_dict(company)
         
-    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'changeType': changeType})
+    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'change': change})
 
 @staff_member_required
-def view_company_approve(_request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     """
     Staff Route. Handles approval of a PendingChange for companies
     if changeType is deletion, company is deleted from PendingCompanies
@@ -296,29 +296,27 @@ def view_company_approve(_request: HttpRequest, changeType: str, id: int) -> Htt
 
     Parameters:
     request (HttpRequest): incoming HTTP request (unused)
-    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
-    id (int): id of approved company
+    id (int): id of pending change
 
     Returns:
     response (HttpResponse): HTTP response redirecting to /companies view
     """
-    if changeType == 'deletion':
-        company = Company.objects.get(id = id)
+    change = PendingChanges.objects.get(id=id)
+    if change.changeType == 'deletion':
+        company = Company.objects.get(id = change.companyId)
         company.delete()
-        change = PendingChanges.objects.get(companyId = id, changeType = changeType)
         change.delete()
 
         return redirect('/companies')
     
-    pendingCompany = PendingCompany.objects.get(id = id)
-    change = PendingChanges.objects.get(companyId = id, changeType = changeType)
-    if changeType == 'create':
+    pendingCompany = PendingCompany.objects.get(id = change.companyId)
+    if change.changeType == 'create':
         new_company = Company()
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
-    if changeType == 'edit':
+    if change.changeType == 'edit':
         company = Company.objects.get(id = change.editId)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
@@ -331,21 +329,20 @@ def view_company_approve(_request: HttpRequest, changeType: str, id: int) -> Htt
     return redirect('/companies')
 
 @staff_member_required
-def view_company_reject(_request: HttpRequest, changeType: str, id: int) -> HttpResponse:
+def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
     """
-    Staff Route. Rejects a PendingChange
+    Staff Route. Triggered when admin clicks "Reject" in company_view_pending
 
     Parameters:
     request (HttpRequest): incoming HTTP request
-    changeType (str): change type for affected company (one of ['edit', 'create', 'deletion'])
-    id (int): id of rejected company
+    id (int): id of pending change
 
     Returns:
     response (HttpResponse): HTTP response redirecting to PendingChanges view
     """
-    change = PendingChanges.objects.get(companyId = id, changeType = changeType)
-    if changeType == 'create' or changeType == 'edit':
-        company = PendingCompany.objects.get(id=id)
+    change = PendingChanges.objects.get(id=id)
+    if change.changeType == 'create' or change.changeType == 'edit':
+        company = PendingCompany.objects.get(id=change.companyId)
         company.delete()
     change.delete()
 

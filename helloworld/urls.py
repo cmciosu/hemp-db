@@ -27,9 +27,9 @@ urlpatterns = [
     # Companies
     path('companies/', views.companies, name="companies"),
     path('companies/<int:id>', views.view_company, name='company-view'),
-    path('companies_pending/<str:changeType>/<int:id>', views.view_company_pending, name='company-view-pending'),
-    path('companies_approve/<str:changeType>/<int:id>', views.view_company_approve, name='company-pending-approve'),
-    path('companies_reject/<str:changeType>/<int:id>', views.view_company_reject, name='company-pending-reject'),
+    path('companies_pending/<int:id>', views.view_company_pending, name='company-view-pending'),
+    path('companies_approve/<int:id>', views.view_company_approve, name='company-pending-approve'),
+    path('companies_reject/<int:id>', views.view_company_reject, name='company-pending-reject'),
     path('companies/search/', views.companies_filtered, name='company-filtered'),
     path('remove_companies/<int:id>', views.remove_companies),
     path('export_companies/', views.export_companies, name='export-companies'),
