@@ -175,7 +175,7 @@ def companies(request: HttpRequest) -> HttpResponse:
     """
     try:
         page = int(request.GET.get('page', 1))
-        page = page if abs(page) < len(PAGE_INDEX) else 1
+        page = page if abs(page) < len(PAGE_INDEX)+1 else 1
     except ValueError: 
         page = 1
     companies = Company.objects.filter(Name__istartswith=PAGE_INDEX[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
@@ -209,8 +209,9 @@ def companies(request: HttpRequest) -> HttpResponse:
     return render(request, 'companies.html', {'form': form,
                                               'uploadForm': uploadForm,
                                               'companies': data,
+                                              'num_companies': companies.count(),
                                               'searchForm': searchForm, 
-                                              'page': page,
+                                              'cur_page': page,
                                               'page_index': PAGE_INDEX,
                                               'filterStatusForm': filterStatusForm,
                                               'filterIndustryForm': filterIndustryForm,

@@ -48,7 +48,11 @@
         }
       </style>
       {% for page in page_index %}
-      <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+        {% if cur_page == forloop.counter %}
+          <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-underline fw-bold text-primary"> {{page}} </a>
+        {% else %}
+          <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-none fw-bold text-black"> {{page}} </a>
+        {% endif %}
       {% endfor %}
     </div>
     
@@ -172,12 +176,24 @@
 
   </div>
 
-  <div class="d-flex justify-content-center gap-2 mt-1">
-
-    {% for page in page_index %}
-    <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
-    {% endfor %}
-  </div>
+  {% if num_companies > 10 %}
+    <div class="d-flex justify-content-center gap-5">
+      <div class="d-flex justify-content-center gap-2 mt-1">
+        {% for page in page_index %}
+          {% if cur_page == forloop.counter %}
+            <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-underline fw-bold text-primary"> {{page}} </a>
+          {% else %}
+            <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-none fw-bold text-black"> {{page}} </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <button class="btn btn-secondary float-end" onclick='
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;'>
+        Go to Top
+      </button>
+    </div>
+  {% endif %}
 
   <div class="modal" id="filterModal">
     <div class="modal-dialog modal-xl">
