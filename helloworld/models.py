@@ -1,5 +1,11 @@
 from django.db import models
 
+class UploadIndex(models.Model):
+    pendingID = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "UploadIndex"
+
 class Resources(models.Model):
     type = models.CharField(max_length=255)
     title = models.CharField(max_length=255, blank=True)
