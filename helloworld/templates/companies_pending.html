@@ -22,7 +22,7 @@
       <tbody>
         {% for change in changes %}
           <tr>
-            <td><a href="{% url 'company-view-pending' change.changeType change.companyId %}">{{ change.companyId }}</a></td>
+            <td><a href="{% url 'company-view-pending' change.id %}">{{ change.companyId }}</a></td>
             <td>{{ change.changeType }}</td>
             <td>{{ change.editId }}</td>
           </tr>
