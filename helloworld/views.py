@@ -324,8 +324,12 @@ def view_company(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company view page template and company data as dict
     """
-    company = Company.objects.get(id = id)
+    company = Company.objects.select_related('Industry', 'Status', 'Grower').get(id = id)
     obj = model_to_dict(company)
+    # Manually add FK values
+    obj["Status"] = company.Status.status
+    obj["Industry"] = company.Industry.industry
+    obj["Grower"] = company.Grower.grower
 
     return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
@@ -346,8 +350,12 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     if change.changeType == 'deletion':
         company = Company.objects.get(id = id)
     if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.get(id = id)    
+        company = PendingCompany.objects.select_related('Industry', 'Status', 'Grower').get(id = id)    
     obj = model_to_dict(company)
+    # Manually add FK values
+    obj["Status"] = company.Status.status
+    obj["Industry"] = company.Industry.industry
+    obj["Grower"] = company.Grower.grower
         
     return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'change': change})
 
