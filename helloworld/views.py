@@ -30,6 +30,7 @@ from .models import Grower
 from .models import Industry
 from .models import Status
 from .models import Resources
+from .models import UploadIndex
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -43,6 +44,62 @@ import numpy as np
 
 # Used for Pagination Bar on /companies
 PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+@staff_member_required
+def upload_wizard(request: HttpRequest) -> HttpResponse:
+    """
+    Staff Route. Presents the user with all uploaded companies, indicating duplicates, and more.
+    Once approved, companies will be uploaded to Companies
+
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to companies page table
+    """
+    index = UploadIndex.objects.all().values_list("pendingID")
+    companies = PendingCompany.objects.filter(pk__in = index)
+    message = ""
+    if request.method == "POST":
+        # Add all companies
+        if "add-all" in request.POST:
+            for company in companies:
+                new_company = Company()
+                for field in company._meta.fields:
+                    if not field.primary_key:
+                        setattr(new_company, field.name, getattr(company, field.name))
+                new_company.save()
+                company.delete()
+            message = "Uploaded All Companies"
+        # Add only unique companies
+        elif "add-unique" in request.POST:
+            for company in companies:
+                dup = Company.objects.filter(Name = company.Name).all()
+                if not dup:
+                    new_company = Company()
+                    for field in company._meta.fields:
+                        if not field.primary_key:
+                            setattr(new_company, field.name, getattr(company, field.name))
+                    new_company.save()
+                company.delete()
+            message = "Uploaded Unique Companies"
+        # Upload Nothing
+        elif "cancel" in request.POST:
+            companies.delete()
+            message = "Canceled File Upload"
+
+        UploadIndex.objects.all().delete()
+        messages.info(request, message)
+        return redirect("/companies")
+    data = []
+    for company in companies:
+        record = {}
+        record["company"] = company
+        dup = Company.objects.filter(Name = company.Name).all()
+        record["duplicate"] = True if dup else False
+        data.append(record)
+
+    return render(request, "upload_wizard.html", {"data": data})
 
 @staff_member_required
 def upload_file(request: HttpRequest) -> HttpResponse:
@@ -68,10 +125,12 @@ def upload_file(request: HttpRequest) -> HttpResponse:
                     frame["Status"] = Status.objects.get(id = frame["Status"])
                     frame["Industry"] = Industry.objects.get(id = frame["Industry"])
                     frame["Grower"] = Grower.objects.get(id = frame["Grower"])
-                    # model = Company(**frame)
-                    # model.save()
-                messages.info(request, 'File Data Successfully Uploaded')
-                return redirect("/companies")
+                    model = PendingCompany(**frame)
+                    model.save()
+                    if (model.id):
+                        upload = UploadIndex(pendingID = model.id)
+                        upload.save()
+                return redirect("/upload_wizard")
         except:  # noqa: E722
             messages.error(request, 'There was an error with the file upload') 
             return redirect("/companies")

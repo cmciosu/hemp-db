@@ -7,12 +7,12 @@
 {% block content %}
 
 {% if messages %}
-  <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
-    {% for message in messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %} alert-danger {% else %} alert-success {% endif %} alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
       <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
-    {% endfor %}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
 {% endif %}
 
 <div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">

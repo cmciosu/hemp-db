@@ -15,6 +15,7 @@ urlpatterns = [
     
     # File Upload
     path("upload/", views.upload_file, name="upload"),
+    path("upload_wizard", views.upload_wizard, name="upload-wizard"),
     
     # Hemp Map
     path("map/", views.map),
