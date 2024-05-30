@@ -43,7 +43,7 @@ import pandas as pd
 import numpy as np
 
 # Used for Pagination Bar on /companies
-PAGE_INDEX=['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+PAGE_INDEX=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
 
 @staff_member_required
 def upload_wizard(request: HttpRequest) -> HttpResponse:
@@ -232,10 +232,11 @@ def companies(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing companies page template, PendingCompanyForm, SearchForm
     """
-
-
-    page = int(request.GET.get('page', 1))
-    
+    try:
+        page = int(request.GET.get('page', 1))
+        page = page if abs(page) < len(PAGE_INDEX)+1 else 1
+    except ValueError: 
+        page = 1
     companies = Company.objects.filter(Name__istartswith=PAGE_INDEX[page-1]).select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
@@ -267,8 +268,9 @@ def companies(request: HttpRequest) -> HttpResponse:
     return render(request, 'companies.html', {'form': form,
                                               'uploadForm': uploadForm,
                                               'companies': data,
+                                              'num_companies': companies.count(),
                                               'searchForm': searchForm, 
-                                              'page': page,
+                                              'cur_page': page,
                                               'page_index': PAGE_INDEX,
                                               'filterStatusForm': filterStatusForm,
                                               'filterIndustryForm': filterIndustryForm,
