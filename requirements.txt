@@ -54,4 +54,4 @@ tzdata==2024.1
     # via pandas
 whitenoise==6.6.0
     # via -r requirements.in
-
+sentry-sdk[django]

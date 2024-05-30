@@ -2,6 +2,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import dj_database_url
+import sentry_sdk
 
 load_dotenv()
 
@@ -146,3 +147,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Crispy Forms (crispy_bootstrap5)
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+# Sentry config
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN', os.getenv('SENTRY_DSN')),
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
