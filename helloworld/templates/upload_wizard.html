@@ -1,0 +1,37 @@
+{% extends "master.html" %}
+
+{% block title %}
+  HempDB - Upload Wizard
+{% endblock %}
+
+{% block content %}
+  {% if data %}  
+    <table class="table table-striped table-sm">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Duplicate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+          <tr class="{% if row.duplicate %} table-danger {% else %} table-success {% endif %}">
+            <td>{{ row.company.Name }}</td>
+            <td>{{ row.duplicate }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <form action="/upload_wizard" method="POST"> 
+      {% csrf_token %}
+      <button type="submit" name="add-all" class="btn btn-primary">Add All</button>
+      <button type="submit" name="add-unique" class="btn btn-primary">Add Unique</button>
+      <button type="submit" name="cancel" class="btn btn-primary">Cancel All</button>
+    </form>
+  {% else %}
+    <p style="display: flex; height: 80vh; align-items: center; text-align: center; justify-content: center;">
+      No Uploads staged
+    </p>
+  {% endif %}
+{% endblock %}

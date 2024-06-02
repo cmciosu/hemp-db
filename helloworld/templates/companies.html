@@ -7,12 +7,12 @@
 {% block content %}
 
 {% if messages %}
-  <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
-    {% for message in messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %} alert-danger {% else %} alert-success {% endif %} alert-dismissible fade show" role="alert" style="width: 40vw; margin-left: 20px; margin-top: 10px;">
       <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="list-style-type: none;">{{ message }}</li>
-    {% endfor %}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
 {% endif %}
 
 <div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">
@@ -47,10 +47,12 @@
           transform: scale(1.3);
         }
       </style>
-
-
       {% for page in page_index %}
-      <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
+        {% if cur_page == forloop.counter %}
+          <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-underline fw-bold text-primary"> {{page}} </a>
+        {% else %}
+          <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-none fw-bold text-black"> {{page}} </a>
+        {% endif %}
       {% endfor %}
     </div>
     
@@ -75,7 +77,11 @@
     <tbody>
       {% for company, solution, category, productgroup, stakeholdergroup, stages in companies %}
         <tr>
-          <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
+          {% if user.is_staff %}
+            <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
+          {% else %}
+            <td> {{company.Name }} </td>
+          {% endif %}
           <td style="{% if company.Status.status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status.status }}</b></td>
           <td>{{ company.Industry.industry }}</td>
           <td>{{ category }}</td>
@@ -174,12 +180,24 @@
 
   </div>
 
-  <div class="d-flex justify-content-center gap-2 mt-1">
-
-    {% for page in page_index %}
-    <a class="pagestyle fw-bold" style="text-decoration:none; color:black" href="/companies/?page={{ forloop.counter }}"> {{page}} </a>
-    {% endfor %}
-  </div>
+  {% if num_companies > 10 %}
+    <div class="d-flex justify-content-center gap-5">
+      <div class="d-flex justify-content-center gap-2 mt-1">
+        {% for page in page_index %}
+          {% if cur_page == forloop.counter %}
+            <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-underline fw-bold text-primary"> {{page}} </a>
+          {% else %}
+            <a href="/companies/?page={{ forloop.counter }}" class="pagestyle text-decoration-none fw-bold text-black"> {{page}} </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <button class="btn btn-secondary float-end" onclick='
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;'>
+        Go to Top
+      </button>
+    </div>
+  {% endif %}
 
   <div class="modal" id="filterModal">
     <div class="modal-dialog modal-xl">
