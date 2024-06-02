@@ -77,7 +77,11 @@
     <tbody>
       {% for company, solution, category, productgroup, stakeholdergroup, stages in companies %}
         <tr>
-          <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
+          {% if user.is_staff %}
+            <td><a href="{% url 'company-view' company.id %}">{{ company.Name }}</a></td>
+          {% else %}
+            <td> {{company.Name }} </td>
+          {% endif %}
           <td style="{% if company.Status.status == 'Active' %}color:green{% else %}color:red{% endif %}"><b>{{ company.Status.status }}</b></td>
           <td>{{ company.Industry.industry }}</td>
           <td>{{ category }}</td>
