@@ -31,8 +31,10 @@
   * For new env vars, add to .env, .env.example, and vercel
   * Make sure to add any new dependencies to requirements.txt
 
-3. Lint with `ruff check .`
-  * fix with `ruff check . --fix`
+3. Lint with ruff
+  * Access the running container's shell with `docker exec -it hempdb-dev /bin/bash` in a new terminal
+  * Lint with `ruff check .`
+  * Fix any errors with `ruff check . --fix`
 
 4. Open PR to dev
 
