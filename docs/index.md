@@ -5,7 +5,7 @@
 - [Developing](DEVELOP.md)
 - [Build & CI/CD](BUILD.md)
 - [Infrastructure](INFRA.md)
-- [File Strcture](FILES.md)
+- [File Structure](FILES.md)
 - [DB Relations & Schema](MODELS.md)
 
 ## Documentation intended for End Users
