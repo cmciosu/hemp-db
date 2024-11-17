@@ -312,7 +312,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
 
     return render(request, 'edit_companies.html', {'form': form, 'company': company})
 
-@staff_member_required
+@login_required
 def view_company(request: HttpRequest, id: int) -> HttpResponse:
     """
     Protected Route. Shows all column values for a single company
