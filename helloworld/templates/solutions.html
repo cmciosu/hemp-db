@@ -7,10 +7,12 @@
 {% block content %}
 
   <div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">
-    {% if user.is_staff %}
+    {% if perms.helloworld.add_solution %}
       <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
+    {% endif %}
+    {% if perms.helloworld.view_solution %}
       <a href="{% url 'export-solutions' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
-      {% endif %}
+    {% endif %}
   </div>
 
   {% include "table.html" %}
