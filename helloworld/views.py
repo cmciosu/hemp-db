@@ -1058,32 +1058,6 @@ def map(request: HttpRequest) -> HttpResponse:
     return render(request, 'map.html')
 
 @staff_member_required
-def admin_tools(request: HttpRequest) -> HttpResponse:
-    """
-    Staff Route. Logic for letting site admins control content displayed on common pages
-      - About
-      - Contribute
-      - Home Page
-
-    Parameters:
-    request (HttpRequest): incoming HTTP request
-
-    Returns:
-    response (HttpResponse): HTTP response rendering admin tools template
-    """
-    resources = Resources.objects.order_by("type").all()
-    
-    if request.method == "POST":
-        form = ResourceForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('/admin_tools')
-    
-    form = ResourceForm()
-
-    return render(request, 'admin_tools.html', {'data': resources, 'form': form})
-
-@staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
     """
     Staff Route. Delete a resource from the Resources table
