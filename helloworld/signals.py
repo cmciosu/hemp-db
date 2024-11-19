@@ -2,13 +2,14 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.contrib.auth.models import User, Group
 
-# List of groups that will give the user 'is_staff' permission
-STAFF_GROUPS = ['Admin', 'SrAdmin']
+
 
 # Triggers when a user's group is updated.
 # e.g. When a SrAdmin gives a user the Admin group, it will automatically give them is_staff
 # so the new admin user may access the Django Administration dashboard. 
 # If the user is removed from the group, it will also automatically remove is_staff.
+#
+# Any group which has the substring "admin" in the group name is considered a staff group
 @receiver(m2m_changed, sender=User.groups.through)
 def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk_set, **kwargs):
 
@@ -17,7 +18,7 @@ def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk
     if action == "post_add":
         for group_id in pk_set:
             group = Group.objects.get(id=group_id)
-            if group.name in STAFF_GROUPS:
+            if "admin" in group.name.lower():
                 instance.is_staff = True
                 instance.save()
                 break
@@ -27,9 +28,10 @@ def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk
     elif action == "post_remove":
         for group_id in pk_set:
             group = Group.objects.get(id=group_id)
-            if group.name in STAFF_GROUPS:
+            if "admin" in group.name.lower(): # if the user was removed from an admin group
+                
                 # If the user is no longer in any STAFF_GROUPS, remove is_staff
-                if not any(g.name in STAFF_GROUPS for g in instance.groups.all()):
+                if not any("admin" in g.name.lower() for g in instance.groups.all()):
                     instance.is_staff = False
                     instance.save()
                     break
