@@ -17,7 +17,10 @@ def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk
     # Enabled is_staff
     if action == "post_add":
         for group_id in pk_set:
-            group = Group.objects.get(id=group_id)
+            try:
+                group = Group.objects.get(id=group_id)
+            except Group.DoesNotExist: # Group could not exist if m2m_changed is from a non-group related m2m table
+                continue
             if "admin" in group.name.lower():
                 instance.is_staff = True
                 instance.save()
@@ -27,11 +30,14 @@ def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk
     # Disables is_staff
     elif action == "post_remove":
         for group_id in pk_set:
-            group = Group.objects.get(id=group_id)
-            if "admin" in group.name.lower(): # if the user was removed from an admin group
-                
-                # If the user is no longer in any STAFF_GROUPS, remove is_staff
-                if not any("admin" in g.name.lower() for g in instance.groups.all()):
-                    instance.is_staff = False
-                    instance.save()
-                    break
+            try:
+                group = Group.objects.get(id=group_id)
+                if "admin" in group.name.lower(): # if the user was removed from an admin group
+                    
+                    # If the user is no longer in any STAFF_GROUPS, remove is_staff
+                    if not any("admin" in g.name.lower() for g in instance.groups.all()):
+                        instance.is_staff = False
+                        instance.save()
+                        break
+            except Group.DoesNotExist: # Group could not exist if m2m_changed is from a non-group related m2m table
+                continue
