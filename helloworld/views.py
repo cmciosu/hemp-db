@@ -348,9 +348,9 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'deletion':
-        company = Company.objects.get(id = id)
+        company = Company.objects.get(id = change.companyId)
     if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.select_related('Industry', 'Status', 'Grower').get(id = id)    
+        company = PendingCompany.objects.select_related('Industry', 'Status', 'Grower').get(id = change.companyId)    
     obj = model_to_dict(company)
     # Manually add FK values
     obj["Status"] = company.Status.status

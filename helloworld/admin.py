@@ -1,7 +1,18 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 
-from .models import Resources, Solution, Category, stakeholderGroups, Stage, ProductGroup, Status, Industry, Grower
+from .models import Company, 
+                    PendingCompany, 
+                    PendingChanges, 
+                    Resources, 
+                    Solution, 
+                    Category, 
+                    stakeholderGroups, 
+                    Stage, 
+                    ProductGroup, 
+                    Status, 
+                    Industry, 
+                    Grower
 
 from .forms import ResourceForm
 
@@ -14,6 +25,19 @@ admin.site.site_title = "HempDB Admin Portal"
 admin.site.register(LogEntry)
 
 # Register DB models here for staff access
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ["Name", "id"]
+    search_fields = ["Name"]
+
+@admin.register(PendingCompany)
+class PendingCompanyAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(PendingChanges)
+class PendingChangesAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(Resources)
 class ResourcesAdmin(admin.ModelAdmin):
     form = ResourceForm

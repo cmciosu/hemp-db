@@ -10,7 +10,9 @@ Vercel automatically builds all branches pushed to github. Main branch is config
 
 ## CI
 
-We use Github Actions for CI. The only action used can be found in the [.github directory](/.github/workflows/migrate-test-lint.yml). It simply runs the test suite, migrations, and lints. This happens only on **opened pull requests to main** and **pushes to main**. 
+We use Github Actions for CI. The [migrate-test-lint workflow](https://github.com/cmciosu/hemp-db/blob/main/.github/workflows/migrate-test-lint.yml) runs the test suite, migrations, and lints. This happens on **opened pull requests to main** and **pushes to main**.
+
+The [codeql workflow](https://github.com/cmciosu/hemp-db/blob/main/.github/workflows/codeql.yml) performs a CodeQL analysis on the code. This happens on **opened pull requests to main**, **pushes to main**, and **weekly on main**.
 
 ## MySQL Database
 
