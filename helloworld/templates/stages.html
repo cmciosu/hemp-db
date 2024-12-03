@@ -8,8 +8,10 @@
 {% block content %}
 
   <div class="btn-group" style="display: block;" role="group" aria-label="Button group with nested dropdown">
-    {% if user.is_staff %}
+    {% if perms.helloworld.add_stage %}
       <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#createModal">Create</button>
+    {% endif %}
+    {% if perms.helloworld.view_stage %}
       <a href="{% url 'export-stages' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
     {% endif %}
   </div>
