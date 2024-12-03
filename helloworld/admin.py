@@ -1,18 +1,18 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 
-from .models import Company, 
-                    PendingCompany, 
-                    PendingChanges, 
-                    Resources, 
-                    Solution, 
-                    Category, 
-                    stakeholderGroups, 
-                    Stage, 
-                    ProductGroup, 
-                    Status, 
-                    Industry, 
-                    Grower
+from .models import Company
+from .models import PendingCompany
+from .models import PendingChanges
+from .models import Resources
+from .models import Solution
+from .models import Category
+from .models import stakeholderGroups
+from .models import Stage
+from .models import ProductGroup
+from .models import Status
+from .models import Industry
+from .models import Grower
 
 from .forms import ResourceForm
 
