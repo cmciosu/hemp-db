@@ -134,12 +134,18 @@ class Grower(models.Model):
         verbose_name = "Grower"
         verbose_name_plural = "Growers"
 
-class Company(models.Model):
+# Abstract base model for company-data related models.
+# Altering this model will effect all models that inherit it,
+# allowing for simpler implementation of features that allow staff users ways to
+# manipulate (add/edit/delete) data fields through an interface (not programmatically)
+#
+# Also allows for easier development, avoiding redundant, duplicate code.
+class CompanyDetail(models.Model):
     SrcKey = models.CharField(max_length=128, default=None, blank=True)
     Name = models.CharField(max_length=250)
-    Industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
-    Status = models.ForeignKey(Status, on_delete=models.CASCADE)
-    Grower = models.ForeignKey(Grower, on_delete=models.CASCADE)
+    Industry = models.ForeignKey(Industry, null=True, on_delete=models.SET_NULL)
+    Status = models.ForeignKey(Status, null=True, on_delete=models.SET_NULL)
+    Grower = models.ForeignKey(Grower, null=True, on_delete=models.SET_NULL)
     Headquarters = models.CharField(max_length=255, blank=True)
     Address = models.CharField(max_length=512, default=None, blank=True)
     Sales = models.CharField(max_length=255, blank=True)
@@ -179,13 +185,17 @@ class Company(models.Model):
     reviews = models.CharField(max_length=512, blank=True)
 
     class Meta:
+        abstract = True
+
+class Company(CompanyDetail):
+
+    class Meta:
         db_table = "company"
 
         verbose_name = "Company"
         verbose_name_plural = "Companies"
 
-# Extends Company model
-class PendingCompany(Company):
+class PendingCompany(CompanyDetail):
 
     class Meta:
         db_table = "pending_company"
