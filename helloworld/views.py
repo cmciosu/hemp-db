@@ -31,7 +31,7 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
-from .notifications import *
+from .notifications import notify_admins_pending_new_company, notify_admins_pending_company_edit
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -307,8 +307,8 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
                 setattr(new_company, field.name, getattr(company_edit, field.name))
         new_company.save()
         messages.info(request, 'Company successfully edited')
-        PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
-        # Todo: send company change email here
+        pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        notify_admins_pending_company_edit(company_name=new_company.Name, pending_change_id=pending_change.id)
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)

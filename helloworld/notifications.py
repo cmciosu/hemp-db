@@ -14,7 +14,7 @@ def notify_admins_pending_new_company(company_name: str, pending_change_id: int)
     
     Parameters:
     company_name (str): Name of the pending company
-    pending_change_id (int): ID of the pending company
+    pending_change_id (int): ID of the pending change
     """
 
     subject = '[HempDB] New Pending Company'
@@ -30,6 +30,51 @@ def notify_admins_pending_new_company(company_name: str, pending_change_id: int)
     # HTML (clickable links)
     html_message = f"""
     <p>A new company called "{company_name}" has been created and is now pending.</p>
+    
+    <p>View this pending change <a href="{settings.SITE_URL}/companies_pending/{pending_change_id}">here</a>.</p>
+    <p>View all pending changes <a href="{settings.SITE_URL}/changes">here</a>.</p>
+    """
+
+    # Group IDs from auth_group containing 'admin' (case insensitive)
+    admin_groups = Group.objects.filter(name__icontains='admin')
+    admin_group_ids = admin_groups.values_list('id', flat=True)
+
+    # Get list of emails for all users that are some form of admin
+    admin_emails = list(User.objects.filter(groups__id__in=admin_group_ids).values_list('email', flat=True).distinct())
+
+    send_mail(
+        subject=subject,
+        message=text_message,
+        from_email=None,    # Uses DEFAULT_FROM_EMAIL
+        html_message=html_message,
+        recipient_list=admin_emails,
+        fail_silently=True
+    )
+
+def notify_admins_pending_company_edit(company_name: str, pending_change_id: int) -> None:
+    """
+    Sends email notification to Admins and SrAdmins when a change to an existing company is made (pending)
+
+    If the company name is changed as part of the edit, the email will contain the new name.
+    
+    Parameters:
+    company_name (str): Name of the company changed
+    pending_change_id (int): ID of the pending change
+    """
+
+    subject = '[HempDB] New Pending Change'
+    
+    # Plaintext
+    text_message = f"""
+    A change to the company called "{company_name}" has been made and is now pending.
+    
+    View this pending change at: {settings.SITE_URL}/companies_pending/{pending_change_id}
+    View all pending changes at: {settings.SITE_URL}/changes
+    """
+
+    # HTML (clickable links)
+    html_message = f"""
+    <p>A change to the company called "{company_name}" has been made and is now pending.</p>
     
     <p>View this pending change <a href="{settings.SITE_URL}/companies_pending/{pending_change_id}">here</a>.</p>
     <p>View all pending changes <a href="{settings.SITE_URL}/changes">here</a>.</p>
