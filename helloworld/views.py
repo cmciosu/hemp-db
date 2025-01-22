@@ -31,6 +31,7 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
+from .notifications import *
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -249,7 +250,8 @@ def companies(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             company = form.save()
             messages.info(request, 'Company successfully submitted')
-            PendingChanges.objects.create(companyId=company.id, changeType='create')
+            pending_change = PendingChanges.objects.create(companyId=company.id, changeType='create')
+            notify_admins_pending_new_company(company_name=company.Name, pending_change_id=pending_change.id)
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
@@ -306,6 +308,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
         new_company.save()
         messages.info(request, 'Company successfully edited')
         PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        # Todo: send company change email here
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
@@ -460,7 +463,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     if "company-search" in request.POST:
         form = SearchForm(request.POST)
         query = form["q"]
-        companies = companies.filter(Name__contains=query.value())
+        companies = companies.filter(Name__icontains=query.value())
     
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]

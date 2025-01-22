@@ -160,11 +160,17 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 )
 
-# Configuration for sending emails   
+if DEBUG:
+    SITE_URL = "http://localhost:8000"
+else:
+    SITE_URL = "https://hempdb.vercel.app" # TODO: change after migration
+
+# Configuration for sending emails
+# https://docs.djangoproject.com/en/5.1/topics/email/
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_APP_PASSWORD')
 
 if DEBUG: # Print emails to console instead of sending them
