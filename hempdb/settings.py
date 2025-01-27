@@ -173,4 +173,4 @@ if DEBUG: # Print emails to console instead of sending them
     SITE_URL = "http://localhost:8000"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    SITE_URL = "https://hempdb.vercel.app" # TODO: change after migration
+    SITE_URL = "https://hempdb.vercel.app" # TODO: change after infra migration

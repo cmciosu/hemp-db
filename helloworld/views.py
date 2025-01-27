@@ -509,8 +509,11 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response redirecting to /companies
     """
-    PendingChanges.objects.create(companyId=id, changeType='deletion')
+    company = Company.objects.get(id=id)
+    pending_change = PendingChanges.objects.create(companyId=id, changeType='deletion')
+
     messages.info(request, 'Deletion of Company requested')
+    email_admins(action='deleted', company_name=company.Name, pending_change_id=pending_change.id)
 
     return redirect('/companies')
 

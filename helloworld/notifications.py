@@ -6,18 +6,18 @@ from django.contrib.auth.models import User, Group
 
 def email_admins(action: str, company_name: str, pending_change_id: int) -> None:
     """
-    Sends an email notification to Admins and SrAdmins when a company has been created or edited.
+    Sends an email notification to Admins and SrAdmins when a company has been created, edited, or deleted.
 
     Note that if the company name is a part of the edit, the new name will appear in the email.
     
     Parameters:
-    action (str): Can only be 'created' or 'edited', depending on if the company is new or was just edited
+    action (str): Can only be 'created', 'edited', or 'deleted' depending on the action.
     company_name (str): Name of the company
     pending_change_id (int): ID of the pending change
     """
 
     # Invalid action
-    if action not in ['created', 'edited']:
+    if action not in ['created', 'edited', 'deleted']:
         return
 
     subject = f'[HempDB] Company {action} (Pending Review)'
