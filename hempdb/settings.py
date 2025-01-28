@@ -159,3 +159,18 @@ sentry_sdk.init(
     # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
 )
+
+# Configuration for sending emails
+# https://docs.djangoproject.com/en/5.1/topics/email/
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_APP_PASSWORD')
+
+if DEBUG: # Print emails to console instead of sending them
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    SITE_URL = "http://localhost:8000"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    SITE_URL = "https://hempdb.vercel.app" # TODO: change after infra migration

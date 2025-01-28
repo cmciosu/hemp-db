@@ -31,6 +31,7 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
+from .notifications import email_admins
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -249,7 +250,8 @@ def companies(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             company = form.save()
             messages.info(request, 'Company successfully submitted')
-            PendingChanges.objects.create(companyId=company.id, changeType='create')
+            pending_change = PendingChanges.objects.create(companyId=company.id, changeType='create')
+            email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
@@ -305,7 +307,8 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
                 setattr(new_company, field.name, getattr(company_edit, field.name))
         new_company.save()
         messages.info(request, 'Company successfully edited')
-        PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
@@ -460,7 +463,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     if "company-search" in request.POST:
         form = SearchForm(request.POST)
         query = form["q"]
-        companies = companies.filter(Name__contains=query.value())
+        companies = companies.filter(Name__icontains=query.value())
     
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
@@ -506,8 +509,11 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response redirecting to /companies
     """
-    PendingChanges.objects.create(companyId=id, changeType='deletion')
+    company = Company.objects.get(id=id)
+    pending_change = PendingChanges.objects.create(companyId=id, changeType='deletion')
+
     messages.info(request, 'Deletion of Company requested')
+    email_admins(action='deleted', company_name=company.Name, pending_change_id=pending_change.id)
 
     return redirect('/companies')
 
