@@ -1112,16 +1112,25 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
 
 def map(request: HttpRequest) -> HttpResponse:
     """
-    Public route. Shows the Hemp Map made by Cherish Despain
+    Public route. Passes data about each company to map.html
+    where a map of markers is rendered using LeafletJS.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
 
     Returns:
-    response (HttpResponse): HTTP response rendering map template
+    response (HttpResponse): HTTP response containing company location data
     """
+    # Select all companies who have a latitude and longitude and are not inactive
+    companies = list(Company.objects.exclude(Latitude__isnull=True)
+                                      .exclude(Longitude__isnull=True)
+                                      .exclude(Status__id=2)
+                                      .values(
+        'Name', 'Latitude', 'Longitude', 
+        'Address', 'City', 'State', 'Country'
+    ))
 
-    return render(request, 'map.html')
+    return render(request, 'map.html', {'companies': companies})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
