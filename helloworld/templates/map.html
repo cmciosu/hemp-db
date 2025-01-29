@@ -5,24 +5,54 @@
 {% endblock %}
 
 {% block content %}
-  <h3 class="d-flex justify-content-center mt-2">HempDB Companies Map</h3>
 
   {{ companies|json_script:"company_data"}}
 
-  <div id="map" style="height: 700px;"></div>
+  <div id="map" style="height: 560px;"></div>
   <script>
-    var map = L.map('map').setView([39.833333, -98.583333], 5); // Center map around U.S.
+    // Create map centered around U.S. and use OSM tile
+    var map = L.map('map').setView([39.833333, -98.583333], 4);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 20,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors<br>'
     }).addTo(map);
 
+    // Add custom text to the bottom-left corner
+    const customText = L.control({ position: 'bottomleft' });
+    customText.onAdd = () => {
+        const p = L.DomUtil.create('p');
+        p.innerHTML = `Marker locations may be inaccurate.<br> 
+                      Click markers for up to date locations.`;
+        return p;
+    };
+    customText.addTo(map);
+
+    // Extract company data from json_script template filter above
     const companies = JSON.parse(document.getElementById('company_data').textContent);
 
-    // Add markers for each company lat/lng
+    // Create marker cluster group and add marker for each company
+    var markers = L.markerClusterGroup();
+
     companies.forEach(company => {
-      L.marker([company.Latitude, company.Longitude]).addTo(map)
-    })
+      var marker = L.marker([company.Latitude, company.Longitude], {
+        title: company.Name // Hover value
+      });
+
+      // Create popup content for clicking markers
+      var popupContent = `<b>${company.Name}</b><br>
+                          Location: ${company.Location}<br>`;
+      if (company.Phone) { 
+        popupContent += `Phone: ${company.Phone}<br>`;
+      }
+      if (company.Website) { 
+        popupContent += `Website: <a href="${company.Website}" target="_blank">${company.Website}</a><br>`;
+      }
+      marker.bindPopup(popupContent);
+      markers.addLayer(marker);
+    });
+
+    // Add the cluster group to the map
+    map.addLayer(markers);
   </script>
 {% endblock %}

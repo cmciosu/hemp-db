@@ -1122,13 +1122,41 @@ def map(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company location data
     """
     # Select all companies who have a latitude and longitude and are not inactive
-    companies = list(Company.objects.exclude(Latitude__isnull=True)
-                                      .exclude(Longitude__isnull=True)
-                                      .exclude(Status__id=2)
-                                      .values(
-        'Name', 'Latitude', 'Longitude', 
-        'Address', 'City', 'State', 'Country'
-    ))
+    companies = list(
+        Company.objects
+        .exclude(Latitude__isnull=True)
+        .exclude(Longitude__isnull=True)
+        .exclude(Status__id=2)
+        .values(
+            'Name', 'Website', 'Phone',
+            'Latitude', 'Longitude',
+            'Address', 'City', 'State', 'Country'            
+        )
+    )
+
+    empty = ['', 'n/a', '--', 'nan', 'none', None]
+
+    # Cleanup data before sending
+    for company in companies:
+
+        # Construct one location string from all present location fields
+        location_parts = []
+        for field in ['Address', 'City', 'State', 'Country']:
+            if company[field].lower() not in empty:
+                location_parts.append(company[field])
+        company['Location'] = ', '.join(location_parts)
+
+        # Delete redundant fields from being sent
+        del company['Address']
+        del company['City']
+        del company['State']
+        del company['Country']
+
+        # Only send Website and Phone if they exist
+        if company['Website'].lower() in empty:
+            del company['Website']
+        if company['Phone'].lower() in empty:
+            del company['Phone']
 
     return render(request, 'map.html', {'companies': companies})
 
