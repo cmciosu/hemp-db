@@ -45,7 +45,7 @@ numpy==1.26.4
     # via
     #   -r requirements.in
     #   pandas
-pandas==2.2.2
+pandas==2.2.3
     # via -r requirements.in
 pycparser==2.22
     # via cffi

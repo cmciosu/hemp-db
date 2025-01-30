@@ -4,7 +4,6 @@
   HempDB
 {% endblock %}
 
-
 {% block content %}
 
   {% if messages %}
@@ -49,4 +48,46 @@
       </a>
     {% endfor %}
   </div>
+  <!-- <div x-data="{ isOpen: false }" class="ms-5">
+    <button type="button" @click="isOpen = !isOpen" class="...">
+      Newest
+    </button>
+  
+    <div
+      x-show="isOpen"
+      x-transition:enter="transition ease-out duration-100 transform"
+      x-transition:enter-start="opacity-0 scale-95"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave="transition ease-in duration-75 transform"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg"
+    >
+      <div class="rounded-md bg-white shadow-xs">
+        <ul class="list-none" style="list-style-type: none;">
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Oldest</li>
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">A -> Z</li>
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Z -> A</li>
+        </ul>
+      </div>
+    </div>
+  </div> -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.9"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.13"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+
+  <div class="dropdown ms-5">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Newest
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="dropdown-item" href="#">Oldest</a>
+      <a class="dropdown-item" href="#">A -> Z</a>
+      <a class="dropdown-item" href="#">Z -> A</a>
+    </div>
+  </div>
+
 {% endblock %}
