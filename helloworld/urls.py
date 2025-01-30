@@ -73,6 +73,9 @@ urlpatterns = [
 
     # User Registration
     path('user/register', views.register),
+    
+    # User Authentication
+    path('activate/<uidb64>/<token>', views.activate, name='activate'),
 
     # Changes
     path('changes/', views.dbChanges),

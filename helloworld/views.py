@@ -31,14 +31,21 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
+from .tokens import account_activation_token
 from .notifications import email_admins
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+
 import csv
 import pandas as pd
 import numpy as np
@@ -190,6 +197,65 @@ def contribute(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'contribute.html', {'text': text.text if text else "", 
                                                'contact': contact.text if contact else ""})
+    
+def activate(request, uidb64, token):
+    """
+    Handles account activation and rerouting for when Activate Now button in their email
+    If the user exists then mark the user as active and save the user to the db
+    Then 
+    Parameters:
+    
+
+    Returns:
+    
+    """
+    User = get_user_model()
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+                
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        
+        # username = user.cleaned_data.get('username')
+        # password= user.cleaned_data.get('password1')
+        # confirmed_user = authenticate(username=username, password=password)
+        login(request, user)
+        messages.success(request, "Successfully Activated Account")
+    #print(user)
+    return redirect('/')
+
+def activate_email(request: HttpRequest, user, to_email):
+    """
+    Builds and sends an email for user verification
+
+    Parameters:
+    
+
+    Returns:
+    
+    """
+    mail_subjet = "Activate User Account"
+    message = render_to_string(
+        "activate_user.html", {
+            "user": user.username,
+            "domain": get_current_site(request).domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": account_activation_token.make_token(user),
+            "protocol": 'https' if request.is_secure() else 'http'
+        }
+    )
+    
+    email = EmailMessage(mail_subjet, message, to=[to_email])
+    email.content_subtype = "html"
+    if email.send():
+        messages.success(request, f'Dear {user.username}, please go to {to_email} inbox/spam & click on recieved activation link to confirm and complete the registration.')
+    else:
+        messages.error(request, f'Error sending authentication email to {to_email}, double check spelling of email.')
 
 def register(request: HttpRequest) -> HttpResponse:
     """
@@ -205,14 +271,11 @@ def register(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password=form.cleaned_data.get('password1')
-
-            messages.success(request, 'Account Created')
-            user = authenticate(username=username, password=password)
-
-            login(request, user)
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            email = form.cleaned_data.get('email')
+            activate_email(request, user, email)
             return redirect('/')
     else:
         form = UserRegisterForm()
