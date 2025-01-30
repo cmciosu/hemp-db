@@ -151,11 +151,30 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
+    order = request.GET.get('order', 'new')
+
+    if order == 'new':
+        sort_by = "id"
+    elif (order == 'old'):
+        sort_by = "-id"
+    elif (order == 'abc'):
+        sort_by = "title"
+        print("the parameter abc was passed in")
+    elif (order == 'cba'):
+        sort_by = "-title"
+
+    try:
+        order_articles = Resources.objects.filter(type="article").all().order_by(sort_by)
+        for article in order_articles:
+            print(f"Article Title: {article.title}")
+    except:
+        print("There was an exception")
+
     articles = Resources.objects.filter(type="article").all()
     title = Resources.objects.filter(type="home_title").first()
     home_text = Resources.objects.filter(type="home_text").first()
 
-    return render(request, 'home.html', {'articles': articles, 
+    return render(request, 'home.html', {'articles': order_articles, 
                                          'title': title.title if title else "", 
                                          'home_text': home_text.text if home_text else "" })
 

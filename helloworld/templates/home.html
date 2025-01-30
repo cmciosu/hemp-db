@@ -73,20 +73,19 @@
     </div>
   </div> -->
 
-  <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.9"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.13"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
 
   <div class="dropdown ms-5">
     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      Newest
+      Sort By
     </button>
     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <a class="dropdown-item" href="#">Oldest</a>
-      <a class="dropdown-item" href="#">A -> Z</a>
-      <a class="dropdown-item" href="#">Z -> A</a>
+      <a class="dropdown-item" href="?order=new">Newest</a>
+      <a class="dropdown-item" href="?order=old">Oldest</a>
+      <a class="dropdown-item" href="?order=abc">A -> Z</a>
+      <a class="dropdown-item" href="?order=cba">Z -> A</a>
     </div>
   </div>
 
