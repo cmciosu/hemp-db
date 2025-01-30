@@ -1128,7 +1128,7 @@ def map(request: HttpRequest) -> HttpResponse:
         .exclude(Longitude__isnull=True)
         .exclude(Status__id=2)
         .values(
-            'Name', 'Website', 'Phone',
+            'id', 'Name', 'Website', 'Phone',
             'Latitude', 'Longitude',
             'Address', 'City', 'State', 'Country'            
         )

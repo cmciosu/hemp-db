@@ -40,7 +40,7 @@
       });
 
       // Create popup content for clicking markers
-      var popupContent = `<b>${company.Name}</b><br>
+      var popupContent = `<b><a href="https://hempdb.vercel.app/companies/${company.id}">${company.Name}</a></b><br>
                           Location: ${company.Location}<br>`;
       if (company.Phone) { 
         popupContent += `Phone: ${company.Phone}<br>`;
