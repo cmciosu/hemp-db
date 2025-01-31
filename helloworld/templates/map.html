@@ -8,7 +8,7 @@
 
   {{ companies|json_script:"company_data"}}
 
-  <div id="map" style="height: 560px;"></div>
+  <div id="map" style="height: 700px;"></div>
   <script>
     // Create map centered around U.S. and use OSM tile
     var map = L.map('map').setView([39.833333, -98.583333], 4);
@@ -18,8 +18,8 @@
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors<br>'
     }).addTo(map);
 
-    // Add custom text to the bottom-left corner
-    const customText = L.control({ position: 'bottomleft' });
+    // Add custom text to the top-right corner
+    const customText = L.control({ position: 'topright' });
     customText.onAdd = () => {
         const p = L.DomUtil.create('p');
         p.innerHTML = `Marker locations may be inaccurate.<br> 

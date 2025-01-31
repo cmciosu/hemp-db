@@ -47,6 +47,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 
 import csv
+import geocoder
+from decimal import Decimal
+from copy import deepcopy
 import pandas as pd
 import numpy as np
 
@@ -308,7 +311,15 @@ def companies(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
-            company = form.save()
+            company = form.save(commit=False) # Don't save to DB yet
+
+            if not company.Latitude and not company.Longitude:
+                lat, lng = geocode_location(company.Address, company.City, company.State, company.Country)
+                company.Latitude = lat
+                company.Longitude = lng
+
+            company.save() # Save instance as Pending Company
+            form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
             pending_change = PendingChanges.objects.create(companyId=company.id, changeType='create')
             email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
@@ -358,6 +369,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
     response (HttpResponse): HTTP response containing company editpage template and PendingCompanyForm
     """
     company = Company.objects.get(id = id)
+    original_company = deepcopy(company) # Deep copy original data for location comparison
     form = PendingCompanyForm(request.POST, instance=company)
     if request.POST and form.is_valid():
         company_edit = form.save(commit=False)
@@ -365,6 +377,14 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
         for field in new_company._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(company_edit, field.name))
+
+        # If location fields have changed, geocode new lat/lng
+        location_changed = check_if_location_edited(original_company, new_company)
+        if location_changed:
+            lat, lng = geocode_location(new_company.Address, new_company.City, new_company.State, new_company.Country)
+            new_company.Latitude = lat
+            new_company.Longitude = lng
+
         new_company.save()
         messages.info(request, 'Company successfully edited')
         pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
@@ -374,6 +394,45 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
         form = PendingCompanyForm(instance=company)
 
     return render(request, 'edit_companies.html', {'form': form, 'company': company})
+
+def check_if_location_edited(company: Company, new_company: PendingCompany) -> bool:
+    """
+    Given a company and it's pending company (edits made), checks if
+    the Address, City, State, or Country were changed. If any of these
+    have changed and the Latitude and Longitude were NOT changed,
+    returns True. Otherwise False.
+
+    Helper function for determining if latitude/longitude
+    lookup needs to be made after a company is edited.
+
+    Parameters:
+    company (Company): original company that is being edited
+    new_company (PendingCompany): model representing original company but with edits
+
+    Returns:
+    bool: True if user changed any location field without updating latitude/longitude
+          False if user changed latitude/longitude, or didn't edit any location fields
+    """
+    location_fields = ['Address', 'City', 'State', 'Country']
+    lat_lng_fields = ['Latitude', 'Longitude']
+    a = b = False
+
+    # Check if any location fields were changed in the edit
+    for field in location_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            a = True
+            break
+
+    # Check if latitude or longitude were changed
+    for field in lat_lng_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            b = True
+            break
+
+    if a and not b:
+        return True # User changed location without updating lat/long
+    
+    return False # User changed lat/long, or did not edit any location fields
 
 @login_required
 def view_company(request: HttpRequest, id: int) -> HttpResponse:
@@ -1206,3 +1265,58 @@ def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
         form = ResourceForm(instance=resource)
     
     return render(request, 'edit_resource.html', {'form': form, 'resource': resource})
+
+def geocode_location(address: str, city: str, state: str, country: str) -> tuple[Decimal, Decimal]:
+    """
+    Takes in address components, cleans them, constructs a geocoding query,
+    and returns the latitude and longitude using geocoder.arcgis(). Returns
+    (None, None) upon a failure.
+
+    Parameters:
+    address (str): Company/PendingCompany.Address
+    city (str): Company/PendingCompany..City
+    state (str): Company/PendingCompany.State
+    country (str): Company/PendingCompany.Country
+
+    Returns:
+    tuple[float, float]: A tuple containing latitude and longitude for 
+        database insertion. Returns (None, None) if geocoding fails.
+    """
+    def clean_value(value: str) -> str:
+        """Clean unwanted values and standardize missing data indicators."""
+        value = str(value).strip()
+        if value.lower() in ['', 'n/a', '--', 'nan', 'none']:
+            return None
+        return value
+
+    # Clean the input values
+    cleaned_address = clean_value(address)
+    cleaned_city = clean_value(city)
+    cleaned_state = clean_value(state)
+    cleaned_country = clean_value(country)
+
+    # Construct the geocoding query
+    query_parts = []
+    if cleaned_address:
+        query_parts.append(cleaned_address)
+    if cleaned_city:
+        query_parts.append(cleaned_city)
+    if cleaned_state:
+        query_parts.append(cleaned_state)
+    if cleaned_country:
+        query_parts.append(cleaned_country)
+
+    query = ', '.join(query_parts) if query_parts else None
+    if not query:
+        return None, None
+
+    # Use geocoder as wrapper for arcgis query to get latitude and longitude
+    try:
+        g = geocoder.arcgis(query)
+        if g.ok:
+            lat = round(Decimal(g.lat), 6)
+            lng = round(Decimal(g.lng), 6)
+            return lat, lng
+    except Exception:
+        pass
+    return None, None
