@@ -153,6 +153,8 @@ class CompanyDetail(models.Model):
     City = models.CharField(max_length=250, blank=True)
     State = models.CharField(max_length=250, blank=True)
     Country = models.CharField(max_length=250)
+    Latitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True)
+    Longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=512, blank=True)
     Category = models.ManyToManyField(Category, blank=True)
