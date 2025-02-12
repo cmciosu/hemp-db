@@ -4,6 +4,7 @@ from django.db.models.signals import m2m_changed
 class HelloworldConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "helloworld"
+    verbose_name = "Hemp DB"
 
     # Runs on startup
     def ready(self):
