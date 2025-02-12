@@ -388,7 +388,6 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
         new_company.save()
         
         # Save the m2m values from the form to the PendingCompany instance (new_company)
-        # Note, using form.save_m2m doesn't work here
         for field_name, field_value in form.cleaned_data.items():
 
             # If the field is an M2M field

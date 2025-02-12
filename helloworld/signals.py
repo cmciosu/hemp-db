@@ -12,7 +12,7 @@ from django.contrib.auth.models import User, Group
 # Any group which has the substring "admin" in the group name is considered a staff group
 @receiver(m2m_changed, sender=User.groups.through)
 def update_is_staff_on_group_change(sender, instance, action, reverse, model, pk_set, **kwargs):
-    # Ensure instance is User object to avoid bug when calling form.save_m2m when editing a Company
+    # Ensure instance is User object to avoid bug when changing m2m data of companies
     if not isinstance(instance, User):
         return
 
