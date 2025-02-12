@@ -524,12 +524,23 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(new_company, field.name).set(m2m_values)
+
     if change.changeType == 'edit':
         company = Company.objects.get(id = change.editId)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
         company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(company, field.name).set(m2m_values)
 
     change.delete()
     pendingCompany.delete()
