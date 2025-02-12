@@ -386,6 +386,17 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
             new_company.Longitude = lng
 
         new_company.save()
+        
+        # Save the m2m values from the form to the PendingCompany instance (new_company)
+        for field_name, field_value in form.cleaned_data.items():
+
+            # If the field is an M2M field
+            if field_name in [field.name for field in new_company._meta.many_to_many]:
+                # Get the M2M field from the new_company PendingCompany instance
+                m2m_field = getattr(new_company, field_name)
+                # Update it's value with updated value(s) from form
+                m2m_field.set(field_value)
+
         messages.info(request, 'Company successfully edited')
         pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
         email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
@@ -512,12 +523,23 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(new_company, field.name).set(m2m_values)
+
     if change.changeType == 'edit':
         company = Company.objects.get(id = change.editId)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
         company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(company, field.name).set(m2m_values)
 
     change.delete()
     pendingCompany.delete()
