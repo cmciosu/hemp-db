@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 # Django strongly encourages using lowercase table names using MySQL
 # https://docs.djangoproject.com/en/5.1/ref/models/options/
 # This will also restrict us to using snake_case so words are preserved.
@@ -187,14 +187,6 @@ class CompanyDetail(models.Model):
     class Meta:
         abstract = True
 
-class Company(CompanyDetail):
-
-    class Meta:
-        db_table = "company"
-
-        verbose_name = "Company"
-        verbose_name_plural = "Companies"
-
 class PendingCompany(CompanyDetail):
 
     class Meta:
@@ -203,10 +195,24 @@ class PendingCompany(CompanyDetail):
         verbose_name = "Pending Company"
         verbose_name_plural = "Pending Companies"
 
+class Company(CompanyDetail):
+    pendingChanges = models.ManyToManyField(PendingCompany, through="PendingChanges")
+    class Meta:
+        db_table = "company"
+
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+
 class PendingChanges(models.Model):
-    companyId = models.CharField(max_length=250)
+    # If a company is deleted, delete all of its associated pending changes
+    company = models.ForeignKey(Company, null=True, on_delete=models.CASCADE)
+    pending_company = models.ForeignKey(PendingCompany, null=True, on_delete=models.CASCADE)
+
+    # If a user is deleted, don't necessarily delete their proposed changes
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
     changeType = models.CharField(max_length=250)
-    editId = models.CharField(max_length=250, blank=True)
 
     class Meta:
         db_table = "pending_change"
