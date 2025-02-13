@@ -52,6 +52,7 @@ from decimal import Decimal
 from copy import deepcopy
 import pandas as pd
 import numpy as np
+from pprint import pprint # For debugging
 
 from django.db import models
 
@@ -568,7 +569,6 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     else:
         print("Change type of pending company object error")
 
-    pprint(context)
     return render(request, 'company_view_pending.html', {'context': context, 'change': obj})
 
 @staff_member_required
@@ -1255,7 +1255,6 @@ def export_industry(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-from pprint import pprint
 @staff_member_required
 def dbChanges(request: HttpRequest) -> HttpResponse:
     """
@@ -1309,8 +1308,6 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
         "create_changes": create_changes_dict,
         "delete_changes": delete_changes_dict,
     }
-
-    pprint(changes_list)
     
     return render(request, 'companies_pending.html', {'changes_list': changes_list})
 
