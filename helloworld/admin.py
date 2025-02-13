@@ -1,4 +1,7 @@
+from django.utils import timezone
+
 from django.contrib import admin
+
 from django.contrib.admin.models import LogEntry
 
 from .models import Company
@@ -25,6 +28,7 @@ admin.site.site_title = "HempDB Admin Portal"
 admin.site.register(LogEntry)
 
 # Register DB models here for staff access
+
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ["Name", "id"]
@@ -36,7 +40,13 @@ class PendingCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(PendingChanges)
 class PendingChangesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["changeType", "author", "created_at_pst"]
+    
+    def created_at_pst(self, obj):
+        local_dt = timezone.localtime(obj.created_at, timezone.get_fixed_timezone(-480)) # UTC-8 (PST)
+        return local_dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    created_at_pst.short_description = "Created at (PST)"
 
 @admin.register(Resources)
 class ResourcesAdmin(admin.ModelAdmin):

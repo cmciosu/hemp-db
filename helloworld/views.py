@@ -53,6 +53,8 @@ from copy import deepcopy
 import pandas as pd
 import numpy as np
 
+from django.db import models
+
 # Used for Pagination Bar on /companies
 PAGE_INDEX=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
 
@@ -321,7 +323,7 @@ def companies(request: HttpRequest) -> HttpResponse:
             company.save() # Save instance as Pending Company
             form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
-            pending_change = PendingChanges.objects.create(companyId=company.id, changeType='create')
+            pending_change = PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
             email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
             return redirect('/companies')  # Redirect to a success page
     else:
@@ -368,9 +370,11 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company editpage template and PendingCompanyForm
     """
+
     company = Company.objects.get(id = id)
     original_company = deepcopy(company) # Deep copy original data for location comparison
     form = PendingCompanyForm(request.POST, instance=company)
+
     if request.POST and form.is_valid():
         company_edit = form.save(commit=False)
         new_company = PendingCompany()
@@ -387,18 +391,15 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
 
         new_company.save()
         
-        # Save the m2m values from the form to the PendingCompany instance (new_company)
-        for field_name, field_value in form.cleaned_data.items():
+        # Manually copy all many-to-many fields
+        for m2m_field in company._meta.many_to_many:
+            if m2m_field.name == "pendingChanges":
+                continue  # Skip pendingChanges
+            related_ids = request.POST.getlist(m2m_field.name)  # Get list of IDs from POST data
+            related_objects = m2m_field.related_model.objects.filter(id__in=related_ids)
+            getattr(new_company, m2m_field.name).set(related_objects)
 
-            # If the field is an M2M field
-            if field_name in [field.name for field in new_company._meta.many_to_many]:
-                # Get the M2M field from the new_company PendingCompany instance
-                m2m_field = getattr(new_company, field_name)
-                # Update it's value with updated value(s) from form
-                m2m_field.set(field_value)
-
-        messages.info(request, 'Company successfully edited')
-        pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        pending_change = PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
         email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
         return redirect('/companies')  # Redirect to a success page
     else: 
@@ -479,18 +480,95 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company view page template and company data as dict
     """
-    change = PendingChanges.objects.get(id=id)
-    if change.changeType == 'deletion':
-        company = Company.objects.get(id = change.companyId)
-    if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.select_related('Industry', 'Status', 'Grower').get(id = change.companyId)    
-    obj = model_to_dict(company)
-    # Manually add FK values
-    obj["Status"] = company.Status.status
-    obj["Industry"] = company.Industry.industry
-    obj["Grower"] = company.Grower.grower
+    # Creates context for viewing details of a pending company object
+    # Different change types require different context to be generated.
+    # For example, edit change types need both the company and pending company details to be able
+    # to present details side-by-side
+    context = {}
+    fields = []
+
+    obj = PendingChanges.objects.get(id=id)
+    
+    if(obj.changeType == "edit"):
+        company = obj.company
+        pending_company = obj.pending_company
+        # Get the fields of the company and pending_company objects
         
-    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'change': change})
+        for field in company._meta.get_fields():
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+            if field.name == "pendingChanges":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                company_values = [str(obj) for obj in getattr(company, field_name).all()]
+                pending_values = [str(obj) for obj in getattr(pending_company, field_name).all()]
+            else:
+                # For regular fields
+                company_values = getattr(company, field_name, None)
+                pending_values = getattr(pending_company, field_name, None)
+
+            is_different = company_values != pending_values
+            fields.append((field_name, company_values, pending_values, is_different))
+
+            context = {
+                'fields': fields
+            }       
+    elif(obj.changeType == "create"):
+        pending_company = obj.pending_company
+
+        for field in pending_company._meta.get_fields():    
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                pending_values = [str(obj) for obj in getattr(pending_company, field_name).all()]
+            else:
+                # For regular fields
+                pending_values = getattr(pending_company, field_name, None)
+
+            fields.append((field_name, pending_values))
+
+            context = {
+                'fields': fields
+            }
+    elif(obj.changeType == "deletion"):
+        company = obj.company
+
+        for field in company._meta.get_fields():    
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                pending_values = [str(obj) for obj in getattr(company, field_name).all()]
+            else:
+                # For regular fields
+                pending_values = getattr(company, field_name, None)
+
+            fields.append((field_name, pending_values))
+
+            context = {
+                'fields': fields
+            }
+    else:
+        print("Change type of pending company object error")
+
+    return render(request, 'company_view_pending.html', {'context': context, 'change': obj})
 
 @staff_member_required
 def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
@@ -510,13 +588,13 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'deletion':
-        company = Company.objects.get(id = change.companyId)
+        company = Company.objects.get(id = change.company.id)
         company.delete()
         change.delete()
 
-        return redirect('/companies')
+        return redirect('/changes')
     
-    pendingCompany = PendingCompany.objects.get(id = change.companyId)
+    pendingCompany = PendingCompany.objects.get(id = change.pending_company.id)
     if change.changeType == 'create':
         new_company = Company()
         for field in pendingCompany._meta.fields:
@@ -530,7 +608,7 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             getattr(new_company, field.name).set(m2m_values)
 
     if change.changeType == 'edit':
-        company = Company.objects.get(id = change.editId)
+        company = Company.objects.get(id = change.company.id)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
@@ -544,7 +622,7 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     change.delete()
     pendingCompany.delete()
 
-    return redirect('/companies')
+    return redirect('/changes')
 
 @staff_member_required
 def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
@@ -560,7 +638,7 @@ def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.get(id=change.companyId)
+        company = PendingCompany.objects.get(id=change.pending_company.id)
         company.delete()
     change.delete()
 
@@ -650,11 +728,11 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response redirecting to /companies
     """
-    company = Company.objects.get(id=id)
-    pending_change = PendingChanges.objects.create(companyId=id, changeType='deletion')
+    companyToDelete = Company.objects.get(id=id)
+    pending_change = PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
 
     messages.info(request, 'Deletion of Company requested')
-    email_admins(action='deleted', company_name=company.Name, pending_change_id=pending_change.id)
+    email_admins(action='deleted', company_name=companyToDelete.Name, pending_change_id=pending_change.id)
 
     return redirect('/companies')
 
@@ -1187,9 +1265,50 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing PendingChanges data
     """
-    changes = PendingChanges.objects.all()
     
-    return render(request, 'companies_pending.html', {'changes': changes})
+    # Edit Changes (linked to a Company object)
+    edit_changes = (
+        Company.objects.prefetch_related("pendingchanges_set__pending_company")
+        .filter(pendingchanges__changeType="edit")
+        .distinct()
+    )
+    edit_changes_dict = {
+        company: list(company.pendingchanges_set.filter(changeType="edit").order_by("-created_at"))
+        for company in edit_changes
+    }
+
+    # Create Changes (linked to a Pending Company object)
+    create_changes = (
+        PendingChanges.objects.filter(changeType="create")
+        .select_related("pending_company")
+        .order_by("-created_at")
+    )
+    create_changes_dict = {}
+    for change in create_changes:
+        company = change.pending_company
+        if company not in create_changes_dict:
+            create_changes_dict[company] = []
+        create_changes_dict[company].append(change)
+
+    # Delete Changes (linked to a Company object)
+    delete_changes = (
+        Company.objects.prefetch_related("pendingchanges_set")
+        .filter(pendingchanges__changeType="deletion")
+        .distinct()
+    )
+    delete_changes_dict = {
+        company: list(company.pendingchanges_set.filter(changeType="deletion").order_by("-created_at"))
+        for company in delete_changes
+    }
+
+    # Prepare context with all three categories
+    changes_list = {
+        "edit_changes": edit_changes_dict,
+        "create_changes": create_changes_dict,
+        "delete_changes": delete_changes_dict,
+    }
+    
+    return render(request, 'companies_pending.html', {'changes_list': changes_list})
 
 def map(request: HttpRequest) -> HttpResponse:
     """
