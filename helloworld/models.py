@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 # Django strongly encourages using lowercase table names using MySQL
 # https://docs.djangoproject.com/en/5.1/ref/models/options/
 # This will also restrict us to using snake_case so words are preserved.
@@ -213,7 +214,7 @@ class PendingChanges(models.Model):
     # If a user is deleted, don't necessarily delete their proposed changes
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=now)
     changeType = models.CharField(max_length=250)
 
     class Meta:
