@@ -31,14 +31,25 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
+from .tokens import account_activation_token
+from .notifications import email_admins
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+
 import csv
+import geocoder
+from decimal import Decimal
+from copy import deepcopy
 import pandas as pd
 import numpy as np
 
@@ -191,6 +202,62 @@ def contribute(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'contribute.html', {'text': text.text if text else "", 
                                                'contact': contact.text if contact else ""})
+    
+def activate(request, uidb64, token):
+    """
+    Handles account activation and rerouting for when Activate Now button in their email
+    If the user exists then mark the user as active and save the user to the db
+    Then 
+    Parameters:
+    
+
+    Returns:
+    
+    """
+    User = get_user_model()
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+        user = None
+        print(f"Error decoding uid or retrieving user: {e}")
+                
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        messages.success(request, "Successfully Activated Account")
+    #print(user)
+    return redirect('/')
+
+def activate_email(request: HttpRequest, user, to_email):
+    """
+    Builds and sends an email for user verification
+
+    Parameters:
+    
+
+    Returns:
+    
+    """
+    mail_subjet = "Activate User Account"
+    message = render_to_string(
+        "activate_user.html", {
+            "user": user.username,
+            "domain": get_current_site(request).domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": account_activation_token.make_token(user),
+            "protocol": 'https' if request.is_secure() else 'http'
+        }
+    )
+    
+    email = EmailMessage(mail_subjet, message, to=[to_email])
+    email.content_subtype = "html"
+    if email.send():
+        messages.success(request, f'Dear {user.username}, please go to {to_email} inbox/spam & click on recieved activation link to confirm and complete the registration.')
+    else:
+        messages.error(request, f'Error sending authentication email to {to_email}, double check spelling of email.')
 
 def register(request: HttpRequest) -> HttpResponse:
     """
@@ -206,14 +273,11 @@ def register(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password=form.cleaned_data.get('password1')
-
-            messages.success(request, 'Account Created')
-            user = authenticate(username=username, password=password)
-
-            login(request, user)
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            email = form.cleaned_data.get('email')
+            activate_email(request, user, email)
             return redirect('/')
     else:
         form = UserRegisterForm()
@@ -249,9 +313,18 @@ def companies(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
-            company = form.save()
+            company = form.save(commit=False) # Don't save to DB yet
+
+            if not company.Latitude and not company.Longitude:
+                lat, lng = geocode_location(company.Address, company.City, company.State, company.Country)
+                company.Latitude = lat
+                company.Longitude = lng
+
+            company.save() # Save instance as Pending Company
+            form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
-            PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
+            pending_change = PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
+            email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
@@ -299,6 +372,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
     """
 
     company = Company.objects.get(id = id)
+    original_company = deepcopy(company) # Deep copy original data for location comparison
     form = PendingCompanyForm(request.POST, instance=company)
 
     if request.POST and form.is_valid():
@@ -307,6 +381,14 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
         for field in new_company._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(company_edit, field.name))
+
+        # If location fields have changed, geocode new lat/lng
+        location_changed = check_if_location_edited(original_company, new_company)
+        if location_changed:
+            lat, lng = geocode_location(new_company.Address, new_company.City, new_company.State, new_company.Country)
+            new_company.Latitude = lat
+            new_company.Longitude = lng
+
         new_company.save()
         
         # Manually copy all many-to-many fields
@@ -317,12 +399,52 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
             related_objects = m2m_field.related_model.objects.filter(id__in=related_ids)
             getattr(new_company, m2m_field.name).set(related_objects)
 
-        PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
+        pending_change = PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
+        email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
 
     return render(request, 'edit_companies.html', {'form': form, 'company': company})
+
+def check_if_location_edited(company: Company, new_company: PendingCompany) -> bool:
+    """
+    Given a company and it's pending company (edits made), checks if
+    the Address, City, State, or Country were changed. If any of these
+    have changed and the Latitude and Longitude were NOT changed,
+    returns True. Otherwise False.
+
+    Helper function for determining if latitude/longitude
+    lookup needs to be made after a company is edited.
+
+    Parameters:
+    company (Company): original company that is being edited
+    new_company (PendingCompany): model representing original company but with edits
+
+    Returns:
+    bool: True if user changed any location field without updating latitude/longitude
+          False if user changed latitude/longitude, or didn't edit any location fields
+    """
+    location_fields = ['Address', 'City', 'State', 'Country']
+    lat_lng_fields = ['Latitude', 'Longitude']
+    a = b = False
+
+    # Check if any location fields were changed in the edit
+    for field in location_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            a = True
+            break
+
+    # Check if latitude or longitude were changed
+    for field in lat_lng_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            b = True
+            break
+
+    if a and not b:
+        return True # User changed location without updating lat/long
+    
+    return False # User changed lat/long, or did not edit any location fields
 
 @login_required
 def view_company(request: HttpRequest, id: int) -> HttpResponse:
@@ -480,12 +602,23 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(new_company, field.name).set(m2m_values)
+
     if change.changeType == 'edit':
         company = Company.objects.get(id = change.company.id)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
         company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(company, field.name).set(m2m_values)
 
     change.delete()
     pendingCompany.delete()
@@ -550,7 +683,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     if "company-search" in request.POST:
         form = SearchForm(request.POST)
         query = form["q"]
-        companies = companies.filter(Name__contains=query.value())
+        companies = companies.filter(Name__icontains=query.value())
     
     solutions = [company.Solutions.all()[:1][0] if len(company.Solutions.all()[:1]) > 0 else "--" for company in companies]
     categories = [company.Category.all()[:1][0] if len(company.Category.all()[:1]) > 0 else "--" for company in companies]
@@ -597,8 +730,10 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     response (HttpResponse): HTTP response redirecting to /companies
     """
     companyToDelete = Company.objects.get(id=id)
-    PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
+    pending_change = PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
+
     messages.info(request, 'Deletion of Company requested')
+    email_admins(action='deleted', company_name=companyToDelete.Name, pending_change_id=pending_change.id)
 
     return redirect('/companies')
 
@@ -1181,16 +1316,53 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
 
 def map(request: HttpRequest) -> HttpResponse:
     """
-    Public route. Shows the Hemp Map made by Cherish Despain
+    Public route. Passes data about each company to map.html
+    where a map of markers is rendered using LeafletJS.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
 
     Returns:
-    response (HttpResponse): HTTP response rendering map template
+    response (HttpResponse): HTTP response containing company location data
     """
+    # Select all companies who have a latitude and longitude and are not inactive
+    companies = list(
+        Company.objects
+        .exclude(Latitude__isnull=True)
+        .exclude(Longitude__isnull=True)
+        .exclude(Status__id=2)
+        .values(
+            'id', 'Name', 'Website', 'Phone',
+            'Latitude', 'Longitude',
+            'Address', 'City', 'State', 'Country'            
+        )
+    )
 
-    return render(request, 'map.html')
+    empty = ['', 'n/a', '--', 'nan', 'none', None]
+
+    # Cleanup data before sending
+    for company in companies:
+
+        # Construct one location string from all present location fields
+        location_parts = []
+        for field in ['Address', 'City', 'State', 'Country']:
+            if company[field].lower() not in empty:
+                location_parts.append(company[field])
+        company['Location'] = ', '.join(location_parts)
+
+        # Delete redundant fields from being sent
+        del company['Address']
+        del company['City']
+        del company['State']
+        del company['Country']
+
+        # Only send Website and Phone if they exist
+        if company['Website'].lower() in empty:
+            del company['Website']
+        if company['Phone'].lower() in empty:
+            del company['Phone']
+
+    return render(request, 'map.html', {'companies': companies})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
@@ -1238,3 +1410,58 @@ def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
         form = ResourceForm(instance=resource)
     
     return render(request, 'edit_resource.html', {'form': form, 'resource': resource})
+
+def geocode_location(address: str, city: str, state: str, country: str) -> tuple[Decimal, Decimal]:
+    """
+    Takes in address components, cleans them, constructs a geocoding query,
+    and returns the latitude and longitude using geocoder.arcgis(). Returns
+    (None, None) upon a failure.
+
+    Parameters:
+    address (str): Company/PendingCompany.Address
+    city (str): Company/PendingCompany..City
+    state (str): Company/PendingCompany.State
+    country (str): Company/PendingCompany.Country
+
+    Returns:
+    tuple[float, float]: A tuple containing latitude and longitude for 
+        database insertion. Returns (None, None) if geocoding fails.
+    """
+    def clean_value(value: str) -> str:
+        """Clean unwanted values and standardize missing data indicators."""
+        value = str(value).strip()
+        if value.lower() in ['', 'n/a', '--', 'nan', 'none']:
+            return None
+        return value
+
+    # Clean the input values
+    cleaned_address = clean_value(address)
+    cleaned_city = clean_value(city)
+    cleaned_state = clean_value(state)
+    cleaned_country = clean_value(country)
+
+    # Construct the geocoding query
+    query_parts = []
+    if cleaned_address:
+        query_parts.append(cleaned_address)
+    if cleaned_city:
+        query_parts.append(cleaned_city)
+    if cleaned_state:
+        query_parts.append(cleaned_state)
+    if cleaned_country:
+        query_parts.append(cleaned_country)
+
+    query = ', '.join(query_parts) if query_parts else None
+    if not query:
+        return None, None
+
+    # Use geocoder as wrapper for arcgis query to get latitude and longitude
+    try:
+        g = geocoder.arcgis(query)
+        if g.ok:
+            lat = round(Decimal(g.lat), 6)
+            lng = round(Decimal(g.lng), 6)
+            return lat, lng
+    except Exception:
+        pass
+    return None, None
