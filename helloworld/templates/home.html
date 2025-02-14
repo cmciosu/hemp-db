@@ -39,9 +39,9 @@
     <hr />
   </div>
   <h3 class="d-flex justify-content-center"> Resources </h3>
-  <div class="d-flex flex-row m-5 gap-5 overflow-scroll"> 
+  <div class="d-flex flex-row m-5 mb-0 gap-5 overflow-scroll" id="articles-container"> 
     {% for article in articles %}
-      <a href="{{ article.url }}" target="_blank" rel="noreferrer" class="card text-decoration-none overflow-x-scroll" style="min-width: 25vw;">
+      <a href="{{ article.url }}" target="_blank" rel="noreferrer" class="card text-decoration-none overflow-x-scroll" style="min-width: 25vw;" data-id="{{ article.id }}">
         <div class="card-body">
           <h5 class="card-title">{{article.title}}</h5>
           <p class="card-text"> {{article.text}} </p>
@@ -49,4 +49,49 @@
       </a>
     {% endfor %}
   </div>
+  <div class="dropup mx-5">
+      <button id="articleLabel" type="button" class="btn btn-secondary" aria-expanded="false">Sort by</button>
+      <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="visually-hidden">Toggle Dropdown</span>
+      </button>
+    <ul class="dropdown-menu" aria-labelledby="articleLabel">
+      <li><button class="dropdown-item" type="button" value="new">Newest</button></li>
+      <li><button class="dropdown-item" type="button" value="old">Oldest</button></li>
+      <li><button class="dropdown-item" type="button" value="abc">ABC</button></li>
+      <li><button class="dropdown-item" type="button" value="zyx">ZYX</button></li>
+    </ul>
+  </div>
+
+  <script>
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', event => {
+        const sortType = event.target.value;
+        const articlesContainer = document.getElementById('articles-container');
+        const articles = Array.from(articlesContainer.children);
+        const display = document.getElementById('articleLabel');
+
+        articles.sort((a, b) => {
+          const titleA = a.querySelector('.card-title').innerText;
+          const titleB = b.querySelector('.card-title').innerText;
+          const idA = parseInt(a.dataset.id);
+          const idB = parseInt(b.dataset.id);
+          if (sortType === 'new') {
+            display.innerHTML = "Newest"
+            return idB - idA;
+          } else if (sortType === 'old') {
+            display.innerHTML = "Oldest"
+            return idA - idB;
+          } else if (sortType === 'abc') {
+            display.innerHTML = "Abc"
+            return titleA.localeCompare(titleB);
+          } else if (sortType === 'zyx') {
+            display.innerHTML = "Zyx"
+            return titleB.localeCompare(titleA);
+          }
+        });
+
+        articles.forEach(article => articlesContainer.appendChild(article));
+      });
+    });
+  </script>
 {% endblock %}
