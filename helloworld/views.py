@@ -163,7 +163,7 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
-    articles = Resources.objects.filter(type="article").all()
+    articles = Resources.objects.filter(type="article").all().order_by("priority")
     title = Resources.objects.filter(type="home_title").first()
     home_text = Resources.objects.filter(type="home_text").first()
 
