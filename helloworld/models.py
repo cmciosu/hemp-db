@@ -30,6 +30,7 @@ class Resources(models.Model):
     url = models.CharField(max_length=1024, blank=True)
     text = models.CharField(max_length=2048, blank=True)
     image = models.CharField(max_length=1024, blank=True)
+    priority = models.SmallIntegerField(blank=True)
 
     class Meta:
         db_table = "resource"
