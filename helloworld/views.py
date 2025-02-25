@@ -1343,7 +1343,7 @@ def map(request: HttpRequest) -> HttpResponse:
             'Phone': company.Phone if is_valid(company.Phone) else None,
             'Latitude': float(company.Latitude),
             'Longitude': float(company.Longitude),
-            'Location': ', '.join([l for l in [company.Address, company.City, company.State, company.Country] if is_valid(l)]),
+            'Location': ', '.join([i for i in [company.Address, company.City, company.State, company.Country] if is_valid(i)]),
             'Industry': company.Industry.id,
             'Categories': [c.id for c in company.Category.all()],
             'Stakeholder Group': [sg.id for sg in company.stakeholderGroup.all()],
