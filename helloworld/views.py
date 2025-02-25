@@ -1324,51 +1324,35 @@ def map(request: HttpRequest) -> HttpResponse:
     # Select all companies who have a latitude and longitude and are not inactive
     companies = list(
         Company.objects
-        .filter(Latitude__isnull=False)
-        .filter(Longitude__isnull=False)
+        .filter(Latitude__isnull=False, Longitude__isnull=False)
         .exclude(Status__id=2)
         .select_related('Industry')
-        .prefetch_related('Category', 'stakeholderGroup', 'Stage', 'productGroup')
+        .prefetch_related('stakeholderGroup', 'productGroup', 'Stage', 'Category')
+        .only('id', 'Name', 'Website', 'Phone', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Industry_id')
     )
 
-    processed_companies = []
-    empty = ['', 'n/a', '--', 'nan', 'none', None]
-    
     # Construct company data into form to be passed to map.html
-    for company in companies:
-        company_data = {
+    def is_valid(value):
+        return str(value).strip().lower() not in {'', 'n/a', '--', 'nan', 'none', 'null'}
+
+    processed_companies = [
+        {
             'id': company.id,
             'Name': company.Name,
-            'Website': company.Website,
-            'Phone': company.Phone,
+            'Website': company.Website if is_valid(company.Website) else None,
+            'Phone': company.Phone if is_valid(company.Phone) else None,
             'Latitude': float(company.Latitude),
             'Longitude': float(company.Longitude),
-            'Address': company.Address,
-            'City': company.City,
-            'State': company.State,
-            'Country': company.Country,
+            'Location': ', '.join([l for l in [company.Address, company.City, company.State, company.Country] if is_valid(l)]),
             'Industry': company.Industry.id,
             'Categories': [c.id for c in company.Category.all()],
             'Stakeholder Group': [sg.id for sg in company.stakeholderGroup.all()],
             'Stages': [s.id for s in company.Stage.all()],
             'Product Group': [pg.id for pg in company.productGroup.all()],
         }
-        
-        # Cleanup location data
-        location_parts = []
-        for field in ['Address', 'City', 'State', 'Country']:
-            if company_data.get(field, '').lower() not in empty:
-                location_parts.append(company_data[field])
-            del company_data[field] # Done with these fields. 'Location' used now
-        company_data['Location'] = ', '.join(location_parts)
-        
-        # Remove website and phone if empty
-        for field in ['Website', 'Phone']:
-            if company_data.get(field, '').lower() in empty:
-                del company_data[field]
-
-        processed_companies.append(company_data)
-
+        for company in companies
+    ]
+    
     # Construct filter options into form to be passed to map.html
     filter_options = [
         {

@@ -55,7 +55,7 @@
     // Extract data from json_script template filter above to embed in HTML
     const companies = JSON.parse(document.getElementById('company_data').textContent);
     const filterData = JSON.parse(document.getElementById('filter_data').textContent);
-
+    
     // Generates filters for sidebar from backend data
     function generateFilters() {
       let filtersDiv = document.getElementById('filters');
@@ -106,7 +106,6 @@
           ).map(checkbox => parseInt(checkbox.value));
         }
       });
-      console.log(selected)
       return selected;
     }
 
