@@ -1324,41 +1324,76 @@ def map(request: HttpRequest) -> HttpResponse:
     # Select all companies who have a latitude and longitude and are not inactive
     companies = list(
         Company.objects
-        .exclude(Latitude__isnull=True)
-        .exclude(Longitude__isnull=True)
+        .filter(Latitude__isnull=False)
+        .filter(Longitude__isnull=False)
         .exclude(Status__id=2)
-        .values(
-            'id', 'Name', 'Website', 'Phone',
-            'Latitude', 'Longitude',
-            'Address', 'City', 'State', 'Country'            
-        )
+        .select_related('Industry')
+        .prefetch_related('Category', 'stakeholderGroup', 'Stage', 'productGroup')
     )
 
+    processed_companies = []
     empty = ['', 'n/a', '--', 'nan', 'none', None]
-
-    # Cleanup data before sending
+    
+    # Construct company data into form to be passed to map.html
     for company in companies:
-
-        # Construct one location string from all present location fields
+        company_data = {
+            'id': company.id,
+            'Name': company.Name,
+            'Website': company.Website,
+            'Phone': company.Phone,
+            'Latitude': float(company.Latitude),
+            'Longitude': float(company.Longitude),
+            'Address': company.Address,
+            'City': company.City,
+            'State': company.State,
+            'Country': company.Country,
+            'Industry': company.Industry.id,
+            'Categories': [c.id for c in company.Category.all()],
+            'Stakeholder Group': [sg.id for sg in company.stakeholderGroup.all()],
+            'Stages': [s.id for s in company.Stage.all()],
+            'Product Group': [pg.id for pg in company.productGroup.all()],
+        }
+        
+        # Cleanup location data
         location_parts = []
         for field in ['Address', 'City', 'State', 'Country']:
-            if company[field].lower() not in empty:
-                location_parts.append(company[field])
-        company['Location'] = ', '.join(location_parts)
+            if company_data.get(field, '').lower() not in empty:
+                location_parts.append(company_data[field])
+            del company_data[field] # Done with these fields. 'Location' used now
+        company_data['Location'] = ', '.join(location_parts)
+        
+        # Remove website and phone if empty
+        for field in ['Website', 'Phone']:
+            if company_data.get(field, '').lower() in empty:
+                del company_data[field]
 
-        # Delete redundant fields from being sent
-        del company['Address']
-        del company['City']
-        del company['State']
-        del company['Country']
+        processed_companies.append(company_data)
 
-        # Only send Website and Phone if they exist
-        if company['Website'].lower() in empty:
-            del company['Website']
-        if company['Phone'].lower() in empty:
-            del company['Phone']
+    # Construct filter options into form to be passed to map.html
+    filter_options = [
+        {
+            'name': 'Industry',
+            'options': [{'id': i['id'], 'name': i['industry']} for i in Industry.objects.values('id', 'industry')],
+        },
+        {
+            'name': 'Categories',
+            'options': [{'id': c['id'], 'name': c['category']} for c in Category.objects.values('id', 'category')],
+        },
+        {
+            'name': 'Stakeholder Group',
+            'options': [{'id': sg['id'], 'name': sg['stakeholderGroup']} for sg in stakeholderGroups.objects.values('id', 'stakeholderGroup')],
+        },
+        {
+            'name': 'Stages',
+            'options': [{'id': s['id'], 'name': s['stage']} for s in Stage.objects.values('id', 'stage')],
+        },
+        {
+            'name': 'Product Group',
+            'options': [{'id': pg['id'], 'name': pg['productGroup']} for pg in ProductGroup.objects.values('id', 'productGroup')],
+        }
+    ]
 
-    return render(request, 'map.html', {'companies': companies})
+    return render(request, 'map.html', {'companies': processed_companies,'filters': filter_options})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
@@ -1415,7 +1450,7 @@ def geocode_location(address: str, city: str, state: str, country: str) -> tuple
 
     Parameters:
     address (str): Company/PendingCompany.Address
-    city (str): Company/PendingCompany..City
+    city (str): Company/PendingCompany.City
     state (str): Company/PendingCompany.State
     country (str): Company/PendingCompany.Country
 
