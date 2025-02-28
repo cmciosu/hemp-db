@@ -177,9 +177,10 @@ else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     SITE_URL = "https://hempdb.vercel.app" # TODO: change after infra migration
 
+REDIS_URL = os.getenv('REDIS_URL').strip()
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": os.getenv('REDIS_URL'),
+        "LOCATION": REDIS_URL,
     }
 }
