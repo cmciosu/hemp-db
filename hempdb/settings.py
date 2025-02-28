@@ -167,8 +167,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_APP_PASSWORD')
-EMAIL_HOST_PASSWORD2 = os.getenv('EMAIL_APP_PASSWORD2')
-PASSWORD_RESET_TIMEOUT = 144000 # 4 hours & then new email is needed
 
 if DEBUG: # Print emails to console instead of sending them
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
