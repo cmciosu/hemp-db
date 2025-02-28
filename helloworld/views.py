@@ -45,6 +45,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
+from django.core.cache import cache
 
 import csv
 import geocoder
@@ -1321,6 +1322,21 @@ def map(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company location data
     """
+    # Differentiate production cache key from others to avoid conflicts
+    if 'hempdb.vercel.app' in request.get_host():
+        cache_key = 'production_map_data'
+    else:
+        cache_key = 'development_map_data'
+
+    cache_timeout = 20 * 60 # 20 minutes before requerying
+
+    try:
+        if map_data_cache := cache.get(cache_key):
+            return render(request, 'map.html', map_data_cache)
+    except Exception:
+            pass # Continue to db query if Redis caching fails
+
+
     # Select all companies who have a latitude and longitude and are not inactive
     companies = list(
         Company.objects
@@ -1377,7 +1393,12 @@ def map(request: HttpRequest) -> HttpResponse:
         }
     ]
 
-    return render(request, 'map.html', {'companies': processed_companies,'filters': filter_options})
+    try:
+        cache.set(cache_key, {'companies': processed_companies, 'filters': filter_options}, cache_timeout)
+    except Exception:
+        pass # Continue without caching if Redis fails
+
+    return render(request, 'map.html', {'companies': processed_companies, 'filters': filter_options})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:

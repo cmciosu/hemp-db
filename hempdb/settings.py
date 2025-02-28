@@ -176,3 +176,10 @@ if DEBUG: # Print emails to console instead of sending them
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     SITE_URL = "https://hempdb.vercel.app" # TODO: change after infra migration
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.getenv('REDIS_URL'),
+    }
+}
