@@ -78,7 +78,7 @@ urlpatterns = [
     # User Authentication
     path('activate/<uidb64>/<token>', views.activate, name='activate'),
     
-    # Password Reset
+    # Password Reset: https://docs.djangoproject.com/en/5.1/topics/auth/default/#changing-passwords
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
