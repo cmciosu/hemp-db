@@ -43,6 +43,7 @@ from django.http import HttpResponse, HttpRequest
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 
 import csv
 import geocoder
@@ -1295,44 +1296,83 @@ def map(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company location data
     """
+    # Differentiate production cache key from others to avoid conflicts
+    if 'hempdb.vercel.app' in request.get_host():
+        cache_key = 'production_map_data'
+    else:
+        cache_key = 'development_map_data'
+
+    cache_timeout = 20 * 60 # 20 minutes before requerying
+
+    try:
+        if map_data_cache := cache.get(cache_key):
+            return render(request, 'map.html', map_data_cache)
+    except Exception:
+            pass # Continue to db query if Redis caching fails
+
+
     # Select all companies who have a latitude and longitude and are not inactive
     companies = list(
         Company.objects
-        .exclude(Latitude__isnull=True)
-        .exclude(Longitude__isnull=True)
+        .filter(Latitude__isnull=False, Longitude__isnull=False)
         .exclude(Status__id=2)
-        .values(
-            'id', 'Name', 'Website', 'Phone',
-            'Latitude', 'Longitude',
-            'Address', 'City', 'State', 'Country'            
-        )
+        .select_related('Industry')
+        .prefetch_related('stakeholderGroup', 'productGroup', 'Stage', 'Category')
+        .only('id', 'Name', 'Website', 'Phone', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Industry_id')
     )
 
-    empty = ['', 'n/a', '--', 'nan', 'none', None]
+    # Construct company data into form to be passed to map.html
+    def is_valid(value):
+        return str(value).strip().lower() not in {'', 'n/a', '--', 'nan', 'none', 'null'}
 
-    # Cleanup data before sending
-    for company in companies:
+    processed_companies = [
+        {
+            'id': company.id,
+            'Name': company.Name,
+            'Website': company.Website if is_valid(company.Website) else None,
+            'Phone': company.Phone if is_valid(company.Phone) else None,
+            'Latitude': float(company.Latitude),
+            'Longitude': float(company.Longitude),
+            'Location': ', '.join([i for i in [company.Address, company.City, company.State, company.Country] if is_valid(i)]),
+            'Industry': company.Industry.id,
+            'Categories': [c.id for c in company.Category.all()],
+            'Stakeholder Group': [sg.id for sg in company.stakeholderGroup.all()],
+            'Stages': [s.id for s in company.Stage.all()],
+            'Product Group': [pg.id for pg in company.productGroup.all()],
+        }
+        for company in companies
+    ]
+    
+    # Construct filter options into form to be passed to map.html
+    filter_options = [
+        {
+            'name': 'Industry',
+            'options': [{'id': i['id'], 'name': i['industry']} for i in Industry.objects.values('id', 'industry')],
+        },
+        {
+            'name': 'Categories',
+            'options': [{'id': c['id'], 'name': c['category']} for c in Category.objects.values('id', 'category')],
+        },
+        {
+            'name': 'Stakeholder Group',
+            'options': [{'id': sg['id'], 'name': sg['stakeholderGroup']} for sg in stakeholderGroups.objects.values('id', 'stakeholderGroup')],
+        },
+        {
+            'name': 'Stages',
+            'options': [{'id': s['id'], 'name': s['stage']} for s in Stage.objects.values('id', 'stage')],
+        },
+        {
+            'name': 'Product Group',
+            'options': [{'id': pg['id'], 'name': pg['productGroup']} for pg in ProductGroup.objects.values('id', 'productGroup')],
+        }
+    ]
 
-        # Construct one location string from all present location fields
-        location_parts = []
-        for field in ['Address', 'City', 'State', 'Country']:
-            if company[field].lower() not in empty:
-                location_parts.append(company[field])
-        company['Location'] = ', '.join(location_parts)
+    try:
+        cache.set(cache_key, {'companies': processed_companies, 'filters': filter_options}, cache_timeout)
+    except Exception:
+        pass # Continue without caching if Redis fails
 
-        # Delete redundant fields from being sent
-        del company['Address']
-        del company['City']
-        del company['State']
-        del company['Country']
-
-        # Only send Website and Phone if they exist
-        if company['Website'].lower() in empty:
-            del company['Website']
-        if company['Phone'].lower() in empty:
-            del company['Phone']
-
-    return render(request, 'map.html', {'companies': companies})
+    return render(request, 'map.html', {'companies': processed_companies, 'filters': filter_options})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
@@ -1389,7 +1429,7 @@ def geocode_location(address: str, city: str, state: str, country: str) -> tuple
 
     Parameters:
     address (str): Company/PendingCompany.Address
-    city (str): Company/PendingCompany..City
+    city (str): Company/PendingCompany.City
     state (str): Company/PendingCompany.State
     country (str): Company/PendingCompany.Country
 

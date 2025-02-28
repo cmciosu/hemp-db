@@ -40,4 +40,4 @@ def activate_email(request: HttpRequest, user, to_email):
         html_message=message
     )
 
-    messages.success(request, f'Dear {user.username}, please go to {to_email} inbox/spam & click on received activation link to confirm and complete the registration.')
+    messages.success(request, f'Dear {user.username}, please go to {to_email} inbox/spam & click on received activation link to confirm and complete the registration. Please allow up to 5 minutues for email.')

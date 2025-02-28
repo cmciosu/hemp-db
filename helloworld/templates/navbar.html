@@ -40,10 +40,10 @@
             {% endif %}
           </div>
         </li>
+        {% endif %}
         <li class="nav-item">
           <a class="nav-link link-light px-3 text-light" href="/map">Map</a>
         </li>
-        {% endif %}
         {% if user.is_staff %}
           <li class="nav-item">
             <a class="nav-link link-light px-3 text-light" href="/changes">Changes</a>
