@@ -6,7 +6,7 @@ from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import messages
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest
 
 def activate_email(request: HttpRequest, user, to_email):
     """

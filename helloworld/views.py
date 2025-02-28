@@ -31,7 +31,6 @@ from .models import Industry
 from .models import Status
 from .models import Resources
 from .models import UploadIndex
-from .tokens import account_activation_token
 from .notifications import email_admins
 from .authentication import activate_email
 from django.shortcuts import render, redirect
@@ -41,11 +40,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
-from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.utils.encoding import force_bytes, force_str
-from django.core.mail import EmailMessage
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 
 import csv
