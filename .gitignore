@@ -4,4 +4,6 @@
 .env
 .ruff_cache
 *.sql
+/venv
+grep
 hempdb-creds.txt

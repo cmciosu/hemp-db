@@ -32,16 +32,27 @@ from .models import Status
 from .models import Resources
 from .models import UploadIndex
 from .notifications import email_admins
+from .authentication import activate_email
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
+
 import csv
+import geocoder
+from decimal import Decimal
+from copy import deepcopy
 import pandas as pd
 import numpy as np
+
+from django.db import models
 
 # Used for Pagination Bar on /companies
 PAGE_INDEX=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
@@ -151,7 +162,7 @@ def index(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing home page template
     """
-    articles = Resources.objects.filter(type="article").all()
+    articles = Resources.objects.filter(type="article").all().order_by("priority")
     title = Resources.objects.filter(type="home_title").first()
     home_text = Resources.objects.filter(type="home_text").first()
 
@@ -190,7 +201,39 @@ def contribute(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'contribute.html', {'text': text.text if text else "", 
                                                'contact': contact.text if contact else ""})
+    
+def activate(request, uidb64, token):
+    """
+    Handles account activation and rerouting for when Activate Now button in their email
+    If the user exists then mark the user as active and save the user to the db
 
+    Parameters:
+    request (HttpRequest): incoming HTTP request
+    uidb64: base64 encoded user ID
+    token: activation token
+
+    Returns:
+    response (HttpResponse): HTTP response redirecting to home page
+    """
+    User = get_user_model()
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
+        user = None
+        print(f"Error decoding uid or retrieving user: {e}")
+                
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        messages.success(request, "Successfully Activated Account")
+    else:
+        messages.error(request, "Activation link is invalid or has expired.")
+    
+    return redirect('/')
+    
 def register(request: HttpRequest) -> HttpResponse:
     """
     Handles User Registration via UserRegisterForm. Form is saved for POST requests,
@@ -205,14 +248,11 @@ def register(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password=form.cleaned_data.get('password1')
-
-            messages.success(request, 'Account Created')
-            user = authenticate(username=username, password=password)
-
-            login(request, user)
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            email = form.cleaned_data.get('email')
+            activate_email(request=request, user=user, to_email=email)
             return redirect('/')
     else:
         form = UserRegisterForm()
@@ -248,9 +288,17 @@ def companies(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = PendingCompanyForm(request.POST)
         if form.is_valid():
-            company = form.save()
+            company = form.save(commit=False) # Don't save to DB yet
+
+            if not company.Latitude and not company.Longitude:
+                lat, lng = geocode_location(company.Address, company.City, company.State, company.Country)
+                company.Latitude = lat
+                company.Longitude = lng
+
+            company.save() # Save instance as Pending Company
+            form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
-            pending_change = PendingChanges.objects.create(companyId=company.id, changeType='create')
+            pending_change = PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
             email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
             return redirect('/companies')  # Redirect to a success page
     else:
@@ -297,23 +345,81 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company editpage template and PendingCompanyForm
     """
+
     company = Company.objects.get(id = id)
+    original_company = deepcopy(company) # Deep copy original data for location comparison
     form = PendingCompanyForm(request.POST, instance=company)
+
     if request.POST and form.is_valid():
         company_edit = form.save(commit=False)
         new_company = PendingCompany()
         for field in new_company._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(company_edit, field.name))
+
+        # If location fields have changed, geocode new lat/lng
+        location_changed = check_if_location_edited(original_company, new_company)
+        if location_changed:
+            lat, lng = geocode_location(new_company.Address, new_company.City, new_company.State, new_company.Country)
+            new_company.Latitude = lat
+            new_company.Longitude = lng
+
         new_company.save()
-        messages.info(request, 'Company successfully edited')
-        pending_change = PendingChanges.objects.create(companyId=new_company.id, changeType='edit', editId=company.id)
+        
+        # Manually copy all many-to-many fields
+        for m2m_field in company._meta.many_to_many:
+            if m2m_field.name == "pendingChanges":
+                continue  # Skip pendingChanges
+            related_ids = request.POST.getlist(m2m_field.name)  # Get list of IDs from POST data
+            related_objects = m2m_field.related_model.objects.filter(id__in=related_ids)
+            getattr(new_company, m2m_field.name).set(related_objects)
+
+        pending_change = PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
         email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
 
     return render(request, 'edit_companies.html', {'form': form, 'company': company})
+
+def check_if_location_edited(company: Company, new_company: PendingCompany) -> bool:
+    """
+    Given a company and it's pending company (edits made), checks if
+    the Address, City, State, or Country were changed. If any of these
+    have changed and the Latitude and Longitude were NOT changed,
+    returns True. Otherwise False.
+
+    Helper function for determining if latitude/longitude
+    lookup needs to be made after a company is edited.
+
+    Parameters:
+    company (Company): original company that is being edited
+    new_company (PendingCompany): model representing original company but with edits
+
+    Returns:
+    bool: True if user changed any location field without updating latitude/longitude
+          False if user changed latitude/longitude, or didn't edit any location fields
+    """
+    location_fields = ['Address', 'City', 'State', 'Country']
+    lat_lng_fields = ['Latitude', 'Longitude']
+    a = b = False
+
+    # Check if any location fields were changed in the edit
+    for field in location_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            a = True
+            break
+
+    # Check if latitude or longitude were changed
+    for field in lat_lng_fields:
+        if getattr(company, field) != getattr(new_company, field):
+            b = True
+            break
+
+    if a and not b:
+        return True # User changed location without updating lat/long
+    
+    return False # User changed lat/long, or did not edit any location fields
 
 @login_required
 def view_company(request: HttpRequest, id: int) -> HttpResponse:
@@ -349,18 +455,95 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing company view page template and company data as dict
     """
-    change = PendingChanges.objects.get(id=id)
-    if change.changeType == 'deletion':
-        company = Company.objects.get(id = change.companyId)
-    if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.select_related('Industry', 'Status', 'Grower').get(id = change.companyId)    
-    obj = model_to_dict(company)
-    # Manually add FK values
-    obj["Status"] = company.Status.status
-    obj["Industry"] = company.Industry.industry
-    obj["Grower"] = company.Grower.grower
+    # Creates context for viewing details of a pending company object
+    # Different change types require different context to be generated.
+    # For example, edit change types need both the company and pending company details to be able
+    # to present details side-by-side
+    context = {}
+    fields = []
+
+    obj = PendingChanges.objects.get(id=id)
+    
+    if(obj.changeType == "edit"):
+        company = obj.company
+        pending_company = obj.pending_company
+        # Get the fields of the company and pending_company objects
         
-    return render(request, 'company_view_pending.html', {'company': company, 'obj': obj, 'change': change})
+        for field in company._meta.get_fields():
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+            if field.name == "pendingChanges":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                company_values = [str(obj) for obj in getattr(company, field_name).all()]
+                pending_values = [str(obj) for obj in getattr(pending_company, field_name).all()]
+            else:
+                # For regular fields
+                company_values = getattr(company, field_name, None)
+                pending_values = getattr(pending_company, field_name, None)
+
+            is_different = company_values != pending_values
+            fields.append((field_name, company_values, pending_values, is_different))
+
+            context = {
+                'fields': fields
+            }       
+    elif(obj.changeType == "create"):
+        pending_company = obj.pending_company
+
+        for field in pending_company._meta.get_fields():    
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                pending_values = [str(obj) for obj in getattr(pending_company, field_name).all()]
+            else:
+                # For regular fields
+                pending_values = getattr(pending_company, field_name, None)
+
+            fields.append((field_name, pending_values))
+
+            context = {
+                'fields': fields
+            }
+    elif(obj.changeType == "deletion"):
+        company = obj.company
+
+        for field in company._meta.get_fields():    
+            if not hasattr(field, 'attname') and not isinstance(field, models.ManyToManyField):
+                continue
+            if field.name == "id":
+                continue
+
+            field_name = field.name
+
+            if isinstance(field, models.ManyToManyField):
+                # Get the list of related object IDs for both company and pending company
+                pending_values = [str(obj) for obj in getattr(company, field_name).all()]
+            else:
+                # For regular fields
+                pending_values = getattr(company, field_name, None)
+
+            fields.append((field_name, pending_values))
+
+            context = {
+                'fields': fields
+            }
+    else:
+        print("Change type of pending company object error")
+
+    return render(request, 'company_view_pending.html', {'context': context, 'change': obj})
 
 @staff_member_required
 def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
@@ -380,30 +563,41 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'deletion':
-        company = Company.objects.get(id = change.companyId)
+        company = Company.objects.get(id = change.company.id)
         company.delete()
         change.delete()
 
-        return redirect('/companies')
+        return redirect('/changes')
     
-    pendingCompany = PendingCompany.objects.get(id = change.companyId)
+    pendingCompany = PendingCompany.objects.get(id = change.pending_company.id)
     if change.changeType == 'create':
         new_company = Company()
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(new_company, field.name, getattr(pendingCompany, field.name))
         new_company.save()
+
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(new_company, field.name).set(m2m_values)
+
     if change.changeType == 'edit':
-        company = Company.objects.get(id = change.editId)
+        company = Company.objects.get(id = change.company.id)
         for field in pendingCompany._meta.fields:
             if not field.primary_key:
                 setattr(company, field.name, getattr(pendingCompany, field.name))
         company.save()
 
+        # Copy over m2m values
+        for field in pendingCompany._meta.many_to_many:
+            m2m_values = getattr(pendingCompany, field.name).all()
+            getattr(company, field.name).set(m2m_values)
+
     change.delete()
     pendingCompany.delete()
 
-    return redirect('/companies')
+    return redirect('/changes')
 
 @staff_member_required
 def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
@@ -419,7 +613,7 @@ def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.get(id=change.companyId)
+        company = PendingCompany.objects.get(id=change.pending_company.id)
         company.delete()
     change.delete()
 
@@ -509,11 +703,11 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response redirecting to /companies
     """
-    company = Company.objects.get(id=id)
-    pending_change = PendingChanges.objects.create(companyId=id, changeType='deletion')
+    companyToDelete = Company.objects.get(id=id)
+    pending_change = PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
 
     messages.info(request, 'Deletion of Company requested')
-    email_admins(action='deleted', company_name=company.Name, pending_change_id=pending_change.id)
+    email_admins(action='deleted', company_name=companyToDelete.Name, pending_change_id=pending_change.id)
 
     return redirect('/companies')
 
@@ -1046,22 +1240,139 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     Returns:
     response (HttpResponse): HTTP response containing PendingChanges data
     """
-    changes = PendingChanges.objects.all()
     
-    return render(request, 'companies_pending.html', {'changes': changes})
+    # Edit Changes (linked to a Company object)
+    edit_changes = (
+        Company.objects.prefetch_related("pendingchanges_set__pending_company")
+        .filter(pendingchanges__changeType="edit")
+        .distinct()
+    )
+    edit_changes_dict = {
+        company: list(company.pendingchanges_set.filter(changeType="edit").order_by("-created_at"))
+        for company in edit_changes
+    }
+
+    # Create Changes (linked to a Pending Company object)
+    create_changes = (
+        PendingChanges.objects.filter(changeType="create")
+        .select_related("pending_company")
+        .order_by("-created_at")
+    )
+    create_changes_dict = {}
+    for change in create_changes:
+        company = change.pending_company
+        if company not in create_changes_dict:
+            create_changes_dict[company] = []
+        create_changes_dict[company].append(change)
+
+    # Delete Changes (linked to a Company object)
+    delete_changes = (
+        Company.objects.prefetch_related("pendingchanges_set")
+        .filter(pendingchanges__changeType="deletion")
+        .distinct()
+    )
+    delete_changes_dict = {
+        company: list(company.pendingchanges_set.filter(changeType="deletion").order_by("-created_at"))
+        for company in delete_changes
+    }
+
+    # Prepare context with all three categories
+    changes_list = {
+        "edit_changes": edit_changes_dict,
+        "create_changes": create_changes_dict,
+        "delete_changes": delete_changes_dict,
+    }
+    
+    return render(request, 'companies_pending.html', {'changes_list': changes_list})
 
 def map(request: HttpRequest) -> HttpResponse:
     """
-    Public route. Shows the Hemp Map made by Cherish Despain
+    Public route. Passes data about each company to map.html
+    where a map of markers is rendered using LeafletJS.
 
     Parameters:
     request (HttpRequest): incoming HTTP request
 
     Returns:
-    response (HttpResponse): HTTP response rendering map template
+    response (HttpResponse): HTTP response containing company location data
     """
+    # Differentiate production cache key from others to avoid conflicts
+    if 'hempdb.vercel.app' in request.get_host():
+        cache_key = 'production_map_data'
+    else:
+        cache_key = 'development_map_data'
 
-    return render(request, 'map.html')
+    cache_timeout = 20 * 60 # 20 minutes before requerying
+
+    try:
+        if map_data_cache := cache.get(cache_key):
+            return render(request, 'map.html', map_data_cache)
+    except Exception:
+            pass # Continue to db query if Redis caching fails
+
+
+    # Select all companies who have a latitude and longitude and are not inactive
+    companies = list(
+        Company.objects
+        .filter(Latitude__isnull=False, Longitude__isnull=False)
+        .exclude(Status__id=2)
+        .select_related('Industry')
+        .prefetch_related('stakeholderGroup', 'productGroup', 'Stage', 'Category')
+        .only('id', 'Name', 'Website', 'Phone', 'Latitude', 'Longitude', 'Address', 'City', 'State', 'Country', 'Industry_id')
+    )
+
+    # Construct company data into form to be passed to map.html
+    def is_valid(value):
+        return str(value).strip().lower() not in {'', 'n/a', '--', 'nan', 'none', 'null'}
+
+    processed_companies = [
+        {
+            'id': company.id,
+            'Name': company.Name,
+            'Website': company.Website if is_valid(company.Website) else None,
+            'Phone': company.Phone if is_valid(company.Phone) else None,
+            'Latitude': float(company.Latitude),
+            'Longitude': float(company.Longitude),
+            'Location': ', '.join([i for i in [company.Address, company.City, company.State, company.Country] if is_valid(i)]),
+            'Industry': company.Industry.id,
+            'Categories': [c.id for c in company.Category.all()],
+            'Stakeholder Group': [sg.id for sg in company.stakeholderGroup.all()],
+            'Stages': [s.id for s in company.Stage.all()],
+            'Product Group': [pg.id for pg in company.productGroup.all()],
+        }
+        for company in companies
+    ]
+    
+    # Construct filter options into form to be passed to map.html
+    filter_options = [
+        {
+            'name': 'Industry',
+            'options': [{'id': i['id'], 'name': i['industry']} for i in Industry.objects.values('id', 'industry')],
+        },
+        {
+            'name': 'Categories',
+            'options': [{'id': c['id'], 'name': c['category']} for c in Category.objects.values('id', 'category')],
+        },
+        {
+            'name': 'Stakeholder Group',
+            'options': [{'id': sg['id'], 'name': sg['stakeholderGroup']} for sg in stakeholderGroups.objects.values('id', 'stakeholderGroup')],
+        },
+        {
+            'name': 'Stages',
+            'options': [{'id': s['id'], 'name': s['stage']} for s in Stage.objects.values('id', 'stage')],
+        },
+        {
+            'name': 'Product Group',
+            'options': [{'id': pg['id'], 'name': pg['productGroup']} for pg in ProductGroup.objects.values('id', 'productGroup')],
+        }
+    ]
+
+    try:
+        cache.set(cache_key, {'companies': processed_companies, 'filters': filter_options}, cache_timeout)
+    except Exception:
+        pass # Continue without caching if Redis fails
+
+    return render(request, 'map.html', {'companies': processed_companies, 'filters': filter_options})
 
 @staff_member_required
 def remove_resource(request: HttpRequest, id: int) -> HttpResponse:
@@ -1109,3 +1420,58 @@ def edit_resource(request: HttpRequest, id: int) -> HttpResponse:
         form = ResourceForm(instance=resource)
     
     return render(request, 'edit_resource.html', {'form': form, 'resource': resource})
+
+def geocode_location(address: str, city: str, state: str, country: str) -> tuple[Decimal, Decimal]:
+    """
+    Takes in address components, cleans them, constructs a geocoding query,
+    and returns the latitude and longitude using geocoder.arcgis(). Returns
+    (None, None) upon a failure.
+
+    Parameters:
+    address (str): Company/PendingCompany.Address
+    city (str): Company/PendingCompany.City
+    state (str): Company/PendingCompany.State
+    country (str): Company/PendingCompany.Country
+
+    Returns:
+    tuple[float, float]: A tuple containing latitude and longitude for 
+        database insertion. Returns (None, None) if geocoding fails.
+    """
+    def clean_value(value: str) -> str:
+        """Clean unwanted values and standardize missing data indicators."""
+        value = str(value).strip()
+        if value.lower() in ['', 'n/a', '--', 'nan', 'none']:
+            return None
+        return value
+
+    # Clean the input values
+    cleaned_address = clean_value(address)
+    cleaned_city = clean_value(city)
+    cleaned_state = clean_value(state)
+    cleaned_country = clean_value(country)
+
+    # Construct the geocoding query
+    query_parts = []
+    if cleaned_address:
+        query_parts.append(cleaned_address)
+    if cleaned_city:
+        query_parts.append(cleaned_city)
+    if cleaned_state:
+        query_parts.append(cleaned_state)
+    if cleaned_country:
+        query_parts.append(cleaned_country)
+
+    query = ', '.join(query_parts) if query_parts else None
+    if not query:
+        return None, None
+
+    # Use geocoder as wrapper for arcgis query to get latitude and longitude
+    try:
+        g = geocoder.arcgis(query)
+        if g.ok:
+            lat = round(Decimal(g.lat), 6)
+            lng = round(Decimal(g.lng), 6)
+            return lat, lng
+    except Exception:
+        pass
+    return None, None

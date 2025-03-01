@@ -14,7 +14,7 @@ From here, staff users can add new users, delete users, assign users to permissi
 
 ## Company Model Objects
 
-Only staff users have permissions to create new model objects (companies, categories, solutions, ...). To create a new company, navigate to 
+Only users that have the corresponding permissions can create new model objects (companies, categories, solutions, ...). To create a new company, navigate to 
 
 `Databases > Companies > Create`
 
@@ -36,33 +36,30 @@ All currently pending changes will be listed here. One will find three types of 
 
 ![changes](images/changes.png)
 
-The changes view presents three columns:
+The changes view presents 3 drop-downs, each corresponding to the 3 change types.
 
-1. Company ID
+Each drop-down will nest more drop-downs, each relating to a company, if there are changes for that company.
 
-For change type deletion this refers to the ID of the company being proposed for deletion.
+Each company drop-down will present a list that shows basic data about the change, such as the company name, the author of the change, and a timestamp.
 
-For change type edit this column is not useful. The important column here is "Affected ID", which indicates the ID of the company proposed for edit.
+These changes are sorted with the most recent being at the top of the list.
 
-For change type create, the Company ID is also not useful information.
-
-2. Change Type
-
-3. Affected ID
-
-Only used for edit actions to indicate the company proposed for edit.
-
-To approve / reject the proposed change, the staff user needs to click on the blue highlighted URL in the Company ID column. 
+To approve / reject the proposed change, the staff user needs to click on the blue highlighted URL in the change list under each company.
 
 ![approval](images/approve.png)
 
-Here the change can be approved or rejected. The staff user can also see all the columns for the Company, and their values. 
+Here the change can be approved or rejected. The staff user can also see all the columns for the Company, and their values.
 
-Clicking Approve will approve the change, and the change will be processed immediately. Clicking Reject will delete the change from the Changes view, and the change will **not** be processeds
+1. For edit changes, 2 columns will be presented, the company column displays all the values currently set, and the pending company values displays the new values.
+Any field that is different will be highlighted in red for convenience to easily understand what changes were proposed.
 
-## Admin Tools
+2. For create and deletion changes, 1 column will be presented. This column displays all the values the company will have if it is a create type, or will be deleted if its a deletion type.
 
-Admin tools allow staff users to make changes to text and resources displayed on the website without having to make changes to the codebase. The text and resources that can be managed in the admin portal include:
+Clicking Approve will approve the change, and the change will be processed immediately. Clicking Reject will delete the change from the Changes view, and the change will **not** be processed.
+
+## Resources
+
+The Resource table allows staff users to make changes to text and resources displayed on the website without having to make changes to the codebase. The resources that can be managed in the Django admin portal include:
 
 - Home Page Title
 - Home Page Text
@@ -71,11 +68,11 @@ Admin tools allow staff users to make changes to text and resources displayed on
 - Contribute Page Contact (email button)
 - Home Page Articles
 
-The admin tools can be accessed by clicking on "Admin Tools" in the navigation bar. Here, the staff user should be presented with the current values for the above mentioned snippets.
+Resources can be accessed by clicking on the user's dropdown in the top-right when logged in as a staff user. Click on "Admin", and navigate to the Resources table under the HEMP DB module.
 
-![admin tools](images/tools.png)
+![resources](images/resources.png)
 
-As with the Companies view, the staff user can create, edit, delete any of these snippets. The table showing the snippets has the following columns:
+By clicking on resource object, the staff user can create, edit, delete any of these snippets. The table showing the snippets has the following columns:
 
 1. Resource Type
 

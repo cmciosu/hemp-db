@@ -32,12 +32,14 @@ jobs:
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        REDIS_URL: ${{ secrets.REDIS_URL }}
     - name: Run Tests
       run: |
         python manage.py test
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        REDIS_URL: ${{ secrets.REDIS_URL }}
     - name: Lint
       run: |
         ruff check .

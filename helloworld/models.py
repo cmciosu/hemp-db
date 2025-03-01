@@ -30,6 +30,7 @@ class Resources(models.Model):
     url = models.CharField(max_length=1024, blank=True)
     text = models.CharField(max_length=2048, blank=True)
     image = models.CharField(max_length=1024, blank=True)
+    priority = models.SmallIntegerField(blank=True, null=True)
 
     class Meta:
         db_table = "resource"
@@ -154,6 +155,8 @@ class CompanyDetail(models.Model):
     City = models.CharField(max_length=250, blank=True)
     State = models.CharField(max_length=250, blank=True)
     Country = models.CharField(max_length=250)
+    Latitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True)
+    Longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=512, blank=True)
     Category = models.ManyToManyField(Category, blank=True)
@@ -201,14 +204,6 @@ class CompanyDetail(models.Model):
     class Meta:
         abstract = True
 
-class Company(CompanyDetail):
-
-    class Meta:
-        db_table = "company"
-
-        verbose_name = "Company"
-        verbose_name_plural = "Companies"
-
 class PendingCompany(CompanyDetail):
 
     class Meta:
@@ -217,10 +212,24 @@ class PendingCompany(CompanyDetail):
         verbose_name = "Pending Company"
         verbose_name_plural = "Pending Companies"
 
+class Company(CompanyDetail):
+    pendingChanges = models.ManyToManyField(PendingCompany, through="PendingChanges")
+    class Meta:
+        db_table = "company"
+
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+
 class PendingChanges(models.Model):
-    companyId = models.CharField(max_length=250)
+    # If a company is deleted, delete all of its associated pending changes
+    company = models.ForeignKey(Company, null=True, on_delete=models.CASCADE)
+    pending_company = models.ForeignKey(PendingCompany, null=True, on_delete=models.CASCADE)
+
+    # If a user is deleted, don't necessarily delete their proposed changes
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    
+    created_at = models.DateTimeField(default=now)
     changeType = models.CharField(max_length=250)
-    editId = models.CharField(max_length=250, blank=True)
 
     class Meta:
         db_table = "pending_change"
