@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 # Django strongly encourages using lowercase table names using MySQL
 # https://docs.djangoproject.com/en/5.1/ref/models/options/
