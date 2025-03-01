@@ -1,6 +1,8 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+
 # Django strongly encourages using lowercase table names using MySQL
 # https://docs.djangoproject.com/en/5.1/ref/models/options/
 # This will also restrict us to using snake_case so words are preserved.
@@ -187,6 +189,19 @@ class CompanyDetail(models.Model):
     GMP = models.CharField(max_length=250, blank=True)
     news = models.CharField(max_length=1024, blank=True)
     reviews = models.CharField(max_length=512, blank=True)
+    dateCreated = models.DateTimeField(auto_now_add=True, blank=False) # default set to 1/1/2024; arbitrary date to fill the entry
+    lastUpdated = models.DateTimeField(auto_now=True, blank=False)
+
+    #
+    # Overriding the save function
+    # Necessary to autofill entries missing 'lastUpdated' field with the 'dateCreated' field
+    #
+    def save(self, *args, **kwargs):
+        if not self.lastUpdated:
+            self.lastUpdated = self.dateCreated
+        else:
+            self.lastUpdated = timezone.now()
+        super().save(*args, **kwargs) # DOES NOT SAVE UPDATES WITHOUT THIS LINE #
 
     class Meta:
         abstract = True
