@@ -17,6 +17,14 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+# For fetching datetime fields
+USE_TZ = True       # Make datetime objects timezone-aware
+TIME_ZONE = 'America/Los_Angeles'   # PST time, automatically handles daylight savings?  
+
+OPTIONS = {
+    'init_command': "SET time_zone='+00:00';"
+}
+
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -94,6 +102,9 @@ DATABASES = {
         'PASSWORD': os.environ.get('MYSQL_PASS', os.getenv('MYSQL_PASS')),
         'HOST': os.environ.get('MYSQL_HOST', os.getenv('MYSQL_HOST')),
         'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET time_zone = 'America/Los_Angeles';" # timezone conversion
+        }
     }
 }
 
