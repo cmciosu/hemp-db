@@ -11,32 +11,32 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='company',
-            name='dateCreated',
-            field=models.DateTimeField(
-                auto_now_add=True,
-                default=make_aware(datetime(2024, 1, 1, 0, 0, 0), get_default_timezone())
-            ),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='company',
-            name='lastUpdated',
-            field=models.DateTimeField(auto_now=True),
-        ),
-        migrations.AddField(
-            model_name='pendingcompany',
-            name='dateCreated',
-            field=models.DateTimeField(
-                auto_now_add=True,
-                default=make_aware(datetime(2024, 1, 1, 0, 0, 0), get_default_timezone())
-            ),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='pendingcompany',
-            name='lastUpdated',
-            field=models.DateTimeField(auto_now=True),
-        ),
+        # migrations.AddField(
+        #     model_name='company',
+        #     name='dateCreated',
+        #     field=models.DateTimeField(
+        #         auto_now_add=True,
+        #         default=make_aware(datetime(2025, 1, 1, 0, 0, 0), get_default_timezone())
+        #     ),
+        #     preserve_default=False,
+        # ),
+        # migrations.AddField(
+        #     model_name='company',
+        #     name='lastUpdated',
+        #     field=models.DateTimeField(auto_now=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='pendingcompany',
+        #     name='dateCreated',
+        #     field=models.DateTimeField(
+        #         auto_now_add=True,
+        #         default=make_aware(datetime(2025, 1, 1, 0, 0, 0), get_default_timezone())
+        #     ),
+        #     preserve_default=False,
+        # ),
+        # migrations.AddField(
+        #     model_name='pendingcompany',
+        #     name='lastUpdated',
+        #     field=models.DateTimeField(auto_now=True),
+        # ),
     ]
