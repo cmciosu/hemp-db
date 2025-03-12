@@ -6,3 +6,4 @@
 *.sql
 /venv
 grep
+hempdb-creds.txt
