@@ -633,6 +633,18 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     """
     query = None
     companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+
+    # Need to initialize to avoid edge-case server error
+    filter_dict = {
+        'Status': [],
+        'Industry': [],
+        'Category': [],
+        'stakeholderGroup': [],
+        'Stage': [],
+        'productGroup': [],
+        'Solutions': []
+    }
+    
     if "item-filter" in request.POST:
         status_ids = request.POST.getlist("status")
         industry_ids = request.POST.getlist("industry")
@@ -650,6 +662,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
             (product_ids, "productGroup"),
             (solution_ids, "Solutions")
         ]
+        filter_dict = {field: lst for lst, field in filter_lists}
         for lst, field in filter_lists:
             if lst:
                 companies = companies.filter(**{f"{field}__in": lst})
@@ -667,13 +680,15 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
 
     form = PendingCompanyForm()
     searchForm = SearchForm()
-    filterStatusForm = FilterStatusForm()
-    filterIndustryForm = FilterIndustryForm()
-    filterCategoryForm = FilterCategoryForm()
-    filterStakeholderGroupForm = FilterStakeholderGroupForm()
-    filterStageForm = FilterStageForm()
-    filterProductGroupForm = FilterProductGroupForm()
-    filterSolutionForm = FilterSolutionForm()
+
+    # Initialize filter forms with selected values
+    filterStatusForm = FilterStatusForm(initial={'status': filter_dict['Status']})
+    filterIndustryForm = FilterIndustryForm(initial={'industry': filter_dict['Industry']})
+    filterCategoryForm = FilterCategoryForm(initial={'category': filter_dict['Category']})
+    filterStakeholderGroupForm = FilterStakeholderGroupForm(initial={'stakeholder_groups': filter_dict['stakeholderGroup']})
+    filterStageForm = FilterStageForm(initial={'stage': filter_dict['Stage']})
+    filterProductGroupForm = FilterProductGroupForm(initial={'product_group': filter_dict['productGroup']})
+    filterSolutionForm = FilterSolutionForm(initial={'solution': filter_dict['Solutions']})
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
