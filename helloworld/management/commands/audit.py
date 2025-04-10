@@ -29,6 +29,8 @@ class Command(BaseCommand):
 
     """
     def handle(self, *args, **kwargs):
+
+        print("Starting Database Auditing Process, this will take a while")
         
         # Initialize the dictionary with empty lists for each field
         df = pd.DataFrame(columns=['id', 'company_name', 'reasons'])
