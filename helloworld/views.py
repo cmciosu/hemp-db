@@ -44,6 +44,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
+from django.template.loader import render_to_string
 
 import csv
 import geocoder
@@ -691,6 +692,10 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     filterSolutionForm = FilterSolutionForm(initial={'solution': filter_dict['Solutions']})
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check if it's an AJAX request
+        html = render_to_string('partials/company_table_rows.html', {'companies': data})
+        return JsonResponse({'html': html})
 
     return render(request, 'companies.html', {'form': form, 
                                               'companies': data, 

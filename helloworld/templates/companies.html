@@ -44,10 +44,10 @@
     </button>
     
     <div class="btn-group float-end mx-5" role="group">
-      <form method="post" action="/companies/search/">
+      <form id="live-search-form" method="post" action="/companies/search/">
         {% csrf_token %}
         {{ searchForm.q }}
-        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit" name="company-search">Search</a>
+        <button class="btn btn-outline-success rounded-pill mx-3 my-2 px-3" type="submit" name="company-search">Search</button>
       </form>
     </div>
     {% if query %}
@@ -238,4 +238,33 @@
       </div>
     </div>
   </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.querySelector('#id_q');
+    const searchForm = document.querySelector('#live-search-form');
+    const resultsContainer = document.querySelector('tbody');
+
+    searchInput.addEventListener('input', function () {
+      const query = searchInput.value;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      fetch('/companies/search/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken
+        },
+        body: new URLSearchParams({ 'q': query, 'company-search': true })
+      })
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newResults = doc.querySelector('tbody').innerHTML;
+        resultsContainer.innerHTML = newResults;
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  });
+</script>
 {% endblock %}
