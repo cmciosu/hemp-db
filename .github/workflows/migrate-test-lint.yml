@@ -28,7 +28,7 @@ jobs:
     - name: Run Migrations
       run: |
         python manage.py makemigrations helloworld --noinput
-        python manage.py migrate helloworld --noinput
+        python manage.py migrate helloworld --fake-initial || python manage.py migrate helloworld --noinput
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
