@@ -23,7 +23,19 @@
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
   {% endif %}
   {% if perms.helloworld.view_company %}
-    <a href="{% url 'export-companies' %}" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</a>
+    <form method="post" action="{% url 'export-companies' %}" style="display: inline;">
+      {% csrf_token %}
+      {% if request.POST %}
+        {% for key, values in request.POST.lists %}
+          {% if key != 'csrfmiddlewaretoken' and key != 'company-search' and key != 'item-filter' %}
+            {% for value in values %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      <button type="submit" class="btn btn-secondary rounded-pill mx-3 my-2 px-3">Export</button>
+    </form>
   {% endif %}
     <button type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" data-bs-toggle="modal" data-bs-target="#filterModal">
       <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">

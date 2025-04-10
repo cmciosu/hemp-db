@@ -633,6 +633,18 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
     """
     query = None
     companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+
+    # Need to initialize to avoid edge-case server error
+    filter_dict = {
+        'Status': [],
+        'Industry': [],
+        'Category': [],
+        'stakeholderGroup': [],
+        'Stage': [],
+        'productGroup': [],
+        'Solutions': []
+    }
+    
     if "item-filter" in request.POST:
         status_ids = request.POST.getlist("status")
         industry_ids = request.POST.getlist("industry")
@@ -650,6 +662,7 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
             (product_ids, "productGroup"),
             (solution_ids, "Solutions")
         ]
+        filter_dict = {field: lst for lst, field in filter_lists}
         for lst, field in filter_lists:
             if lst:
                 companies = companies.filter(**{f"{field}__in": lst})
@@ -667,13 +680,15 @@ def companies_filtered(request: HttpRequest) -> HttpResponse:
 
     form = PendingCompanyForm()
     searchForm = SearchForm()
-    filterStatusForm = FilterStatusForm()
-    filterIndustryForm = FilterIndustryForm()
-    filterCategoryForm = FilterCategoryForm()
-    filterStakeholderGroupForm = FilterStakeholderGroupForm()
-    filterStageForm = FilterStageForm()
-    filterProductGroupForm = FilterProductGroupForm()
-    filterSolutionForm = FilterSolutionForm()
+
+    # Initialize filter forms with selected values
+    filterStatusForm = FilterStatusForm(initial={'status': filter_dict['Status']})
+    filterIndustryForm = FilterIndustryForm(initial={'industry': filter_dict['Industry']})
+    filterCategoryForm = FilterCategoryForm(initial={'category': filter_dict['Category']})
+    filterStakeholderGroupForm = FilterStakeholderGroupForm(initial={'stakeholder_groups': filter_dict['stakeholderGroup']})
+    filterStageForm = FilterStageForm(initial={'stage': filter_dict['Stage']})
+    filterProductGroupForm = FilterProductGroupForm(initial={'product_group': filter_dict['productGroup']})
+    filterSolutionForm = FilterSolutionForm(initial={'solution': filter_dict['Solutions']})
 
     data = zip(companies, solutions, categories, productGroups, stakeholderGroups, stages)
 
@@ -712,15 +727,15 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     return redirect('/companies')
 
 @staff_member_required
-def export_companies(_request: HttpRequest) -> HttpResponse:
+def export_companies(request: HttpRequest) -> HttpResponse:
     """
-    Staff Route. Exports all data from Company table
+    Staff Route. Exports all data or filtered data from Company table
 
     Parameters:
-    request (HttpRequest): incoming HTTP request (unused)
+    request (HttpRequest): incoming HTTP request
 
     Returns:
-    response (HttpResponse): HTTP response containing company data in csv
+    response (HttpResponse): HTTP response containing all or filtered company data in csv
     """
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="companies.csv"'
@@ -728,8 +743,37 @@ def export_companies(_request: HttpRequest) -> HttpResponse:
     writer = csv.writer(response)
     writer.writerow([str(field).split('helloworld.Company.')[1] for field in Company._meta.fields])
 
-    companies = Company.objects.all().values_list()
-    for company in companies:
+    companies = Company.objects.select_related('Industry', 'Status').prefetch_related('Solutions', 'Category', 'stakeholderGroup', 'productGroup', 'Stage')
+
+    if request.method == 'POST':
+        if "status" in request.POST:
+            status_ids = request.POST.getlist("status")
+            companies = companies.filter(Status__in=status_ids)
+        if "industry" in request.POST:
+            industry_ids = request.POST.getlist("industry")
+            companies = companies.filter(Industry__in=industry_ids)
+        if "category" in request.POST:
+            category_ids = request.POST.getlist("category")
+            companies = companies.filter(Category__in=category_ids)
+        if "stakeholder_groups" in request.POST:
+            stakeholder_group_ids = request.POST.getlist("stakeholder_groups")
+            companies = companies.filter(stakeholderGroup__in=stakeholder_group_ids)
+        if "stage" in request.POST:
+            stage_ids = request.POST.getlist("stage")
+            companies = companies.filter(Stage__in=stage_ids)
+        if "product_group" in request.POST:
+            product_ids = request.POST.getlist("product_group")
+            companies = companies.filter(productGroup__in=product_ids)
+        if "solution" in request.POST:
+            solution_ids = request.POST.getlist("solution")
+            companies = companies.filter(Solutions__in=solution_ids)
+        if "q" in request.POST:
+            query = request.POST["q"]
+            companies = companies.filter(Name__icontains=query)
+
+        companies = companies.distinct()
+
+    for company in companies.values_list():
         writer.writerow(company)
 
     return response
