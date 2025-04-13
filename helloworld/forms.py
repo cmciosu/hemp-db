@@ -90,23 +90,23 @@ class PendingCompanyForm(forms.ModelForm):
     required_css_class = 'required'
     Solutions = forms.ModelMultipleChoiceField(
             queryset=Solution.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     Category = forms.ModelMultipleChoiceField(
             queryset=Category.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     stakeholderGroup = forms.ModelMultipleChoiceField(
             queryset=stakeholderGroups.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     Stage = forms.ModelMultipleChoiceField(
             queryset=Stage.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     productGroup = forms.ModelMultipleChoiceField(
             queryset=ProductGroup.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
 
     class Meta:
