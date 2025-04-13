@@ -79,7 +79,6 @@ class stakeholderGroups(models.Model):
 
 class Stage(models.Model):
     stage = models.CharField(max_length=1024)
-    category = models.IntegerField()
 
     def __str__(self):
         return self.stage
