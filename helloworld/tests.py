@@ -45,8 +45,8 @@ class StakeholderGroupsTestCase(TestCase):
 
 class StagesTestCase(TestCase):
     def setUp(self):
-        Stage.objects.create(stage="testStage", category=1)
-        Stage.objects.create(stage="anotherTestStage", category=2)
+        Stage.objects.create(stage="testStage")
+        Stage.objects.create(stage="anotherTestStage")
 
     def test_stages_are_created(self):
         c1 = Stage.objects.get(stage="testStage")
@@ -142,7 +142,7 @@ class CompanyTestCase(TestCase):
         c1.Solutions.add(Solution.objects.create(solution="testSolution"))
         c1.Category.add(Category.objects.create(category="testCategory"))
         c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
-        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage"))
         c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
         
         c2 = Company.objects.create(
@@ -187,7 +187,7 @@ class CompanyTestCase(TestCase):
         c2.Solutions.add(Solution.objects.create(solution="testSolution"))
         c2.Category.add(Category.objects.create(category="testCategory"))
         c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
-        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage"))
         c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
@@ -240,7 +240,7 @@ class PendingCompanyTestCase(TestCase):
         c1.Solutions.add(Solution.objects.create(solution="testSolution"))
         c1.Category.add(Category.objects.create(category="testCategory"))
         c1.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
-        c1.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c1.Stage.add(Stage.objects.create(stage="testStage"))
         c1.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
         
         c2 = PendingCompany.objects.create(
@@ -285,7 +285,7 @@ class PendingCompanyTestCase(TestCase):
         c2.Solutions.add(Solution.objects.create(solution="testSolution"))
         c2.Category.add(Category.objects.create(category="testCategory"))
         c2.stakeholderGroup.add(stakeholderGroups.objects.create(stakeholderGroup="testStakeholderGroup", category=1))
-        c2.Stage.add(Stage.objects.create(stage="testStage", category=1))
+        c2.Stage.add(Stage.objects.create(stage="testStage"))
         c2.productGroup.add(ProductGroup.objects.create(productGroup="testProductGroup"))
 
     def test_companies_are_created(self):
