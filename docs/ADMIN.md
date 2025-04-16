@@ -74,6 +74,21 @@ Any field that is different will be highlighted in red for convenience to easily
 
 Clicking Approve will approve the change, and the change will be processed immediately. Clicking Reject will delete the change from the Changes view, and the change will **not** be processed.
 
+## Receiving Pending Change Emails
+
+Any user in a group with the substring "admin" (i.e. the `Admin` and `SrAdmin` groups), will receive email notifications to the email associated with their account when a pending change is created. In other words, each time a company is created, edited, or deleted, and the change needs approval, these users will receive an email.
+
+If a user would like to receive these emails, they can follow these steps:
+1. Log in to [HempDB](https://hempdb.vercel.app/).
+2. Click your username in the top right, and click `Admin` from the dropdown.
+  * If you do not see `Admin` in this dropdown, contact someone with `staff` status to do the remaining steps for you.
+3. Once in the Django admin portal, click `Users` on the left.
+4. Click the name of the user. Emails will be sent to the email associated with this user's account.
+5. Scroll down to the groups section and add the user to the `Admin` and/or `SrAdmin` group by clicking on either group and hitting the right arrow. Anyone in either of these groups will receive emails.
+6. Click `Save` at the bottom of this page.
+
+**Important:** These emails may first arrive in the Junk/Spam folder; from there you can trust the sender. Emails may also take up to 5 minutes to send from when the change is created.
+
 ## Resources
 
 The `resource` table allows staff users to make changes to text and resources displayed on the website without having to make changes to the codebase. This table allows staff users to configure the following in the Django admin portal:
