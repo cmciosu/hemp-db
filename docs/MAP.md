@@ -3,9 +3,7 @@ This section will cover the implementation of the map and its dependencies. User
 
 The company map used to be an static ArcGIS map embedded within the HempDB page. Now the map shows active companies within the `company` table using their latitude and longitude fields.
 
-The map in its current state was implemented in these PRs if you'd like to see the code:
-- https://github.com/cmciosu/hemp-db/pull/171
-- https://github.com/cmciosu/hemp-db/pull/179
+The map in its current state was implemented in these PRs if you'd like to see the code: [#171](https://github.com/cmciosu/hemp-db/pull/171), [#179](https://github.com/cmciosu/hemp-db/pull/179).
 
 ## Libraries and APIs
 The map and markers are displayed using [LeafletJS](https://leafletjs.com/), and the heatmap functionality uses [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster).
@@ -17,7 +15,7 @@ To obtain the latitude and longitude of each company, we use the [Geocoder](http
 ## Latitude and Longitude
 Since we can't query all 5,000+ company latitudes/longitudes each time someone visits the map, we store them in the database. Prior to this, each company just had a country (required), and an address (optional). We now obtain the company's latitude and longitude from these avaiable attributes.
 
-### When We Geocode
+### When Do We Geocode
 __Creating a company__
 1. Without providing a lat/lng, code will automatically attempt to geocode provided loaction field(s) to produce lat/lng
 2. Providing a lat/lng will not trigger the geocode and will use entered value(s)
