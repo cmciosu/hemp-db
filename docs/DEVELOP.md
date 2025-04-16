@@ -1,22 +1,26 @@
 # Developing on HempDB
 
+This page details how to set up a local development environment and develop features. This page is intended for developers.
+
 ## Local Setup
 
 1. Clone repository
-2. Set up .env
+2. Set up .env file
   * `cp .env.example .env`
-  * Add credentials to .env file
+  * Replace dummy values with actual values. Actual .env values and credentials can be obtained via Teams.
 
 3. Build the docker image
   * `docker build -t hempdb .`
 
 4. Start Docker container
   * Mac/Linux: `docker run --name hempdb-dev -it -p 8000:8000 -v $(pwd):/code hempdb`    
-  * Windows: `docker run --name hempdb-dev -it -p 8000:8000 -v ${pwd}:/code hempdb`
+  * Windows (PowerShell): `docker run --name hempdb-dev -it -p 8000:8000 -v ${pwd}:/code hempdb`
   * If container already exists: `docker start -a -i hempdb-dev`
   * To remove duplicate container: `docker rm hempdb-dev`
 
 5. Open http://localhost:8000
+
+**Container does not need to be manually restarted with every code change. Django uses StatReloader to auto-reload the code**
 
 ## Local Development
 
@@ -24,28 +28,20 @@
   * `git checkout -b "<feature_name>"`
 
 2. Develop feature
-  * For migrations, run:
-  * `docker exec -it hempdb-dev bash`
-  * `python manage.py makemigrations`
-  * `python manage.py migrate`
-  * For new env vars, add to .env, .env.example, and vercel
-  * Make sure to add any new dependencies to requirements.txt
+  * For features that alter database schema, make and run migrations:
+    * Access the running container's shell with `docker exec -it hempdb-dev bash` in a separate terminal
+    * `python manage.py makemigrations`
+    * `python manage.py migrate`
+  * For features that add new env vars, add them to your .env, the .env.example, and to Vercel
+  * Add any new dependencies to requirements.txt. 
+    * You will need to rebuild your docker image when dependencies are added.
 
 3. Lint with ruff
-  * Access the running container's shell with `docker exec -it hempdb-dev /bin/bash` in a new terminal
+  * Access the running container's shell with `docker exec -it hempdb-dev bash` in a separate terminal
   * Lint with `ruff check .`
   * Fix any errors with `ruff check . --fix`
 
-4. Open PR to dev
+4. Push branch and open PR
 
-**Container does not need to be manually restarted with every code change, django uses StatReloader to auto-reload the code**
-
-## Deploy to Production
-
-1. Open PR dev -> main
-
-### ⚠️⚠️⚠️ Make sure Debug is set to False ⚠️⚠️⚠️
-
-1. Go to `hempdb/settings.py`, set Debug to False
-2. Go to vercel, make sure build succeeded
-3. Open PR to main
+### ⚠️⚠️⚠️ Before Pushing to GitHub, Ensure `DEBUG = False` ⚠️⚠️⚠️
+  * Go to `hempdb/settings.py`, set Debug to False
