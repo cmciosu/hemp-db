@@ -1,26 +1,38 @@
 # File Structure
 
-### This document outlines the file structure used for the HempDB project. This document is intended for developers / maintainers. 
+This page outlines the file structure used for the HempDB project and is intended for developers and maintainers. 
 
-## ~/hempdb
+```
+hemp-db/
+├─ .github/
+├─ docs/
+│  └─ images/
+├─ hempdb/
+└─ helloworld/
+   ├─ management/
+   │  └─ commands/
+   ├─ migrations/
+   └─ templates/
+```
+_A high-level folder structure of hemp-db._
 
-Contains Django configuration files [settings.py](https://github.com/cmciosu/hemp-db/blob/main/hempdb/settings.py) and top-level urls [urls.py](https://github.com/cmciosu/hemp-db/blob/main/hempdb/urls.py) (auth URLs, homepage)
+## .github/
+* Files related to GitHub Actions workflows and GitHub Issue templates.
 
-## ~/helloworld
+## docs/
+* Markdown files and images for this documentation site.
 
-Contains the main Django application. Most of the logic is implemented in this folder. 
-- [urls.py](https://github.com/cmciosu/hemp-db/blob/main/helloworld/urls.py) contains all model routes, as well as routes to misc. pages. 
-- [views.py](https://github.com/cmciosu/hemp-db/blob/main/helloworld/views.py) contains all the View logic for all helloworld routes.
-- [models.py](https://github.com/cmciosu/hemp-db/blob/main/helloworld/models.py) contains our schema
-- [forms.py](https://github.com/cmciosu/hemp-db/blob/main/helloworld/forms.py) contains all model forms
-### /helloworld/templates
+## hempdb/
+* The Django "project" containing high-level configuration files like `settings.py` and the top-level `urls.py`.
 
-All the template files used across the site. The registration subdirectory holds all template files related to auth
-
-## ~/.github
-
-Hosts Github Actions
-
-## ~/docs
-
-Hosts documentation
+## helloworld/
+* The Django "app" containing a majority of the project's code. Notable folders/files include:
+  * `migrations/`: files that track changes made to database schema. Documentation [here](https://docs.djangoproject.com/en/5.2/topics/migrations/).
+  * `templates/`: files that construct the frontend interface using Django's templating syntax to dynamically insert content. Documentation [here](https://docs.djangoproject.com/en/5.2/topics/templates/).
+  * `admin.py`: configuration for the Django admin portal. Documentation [here](https://docs.djangoproject.com/en/5.2/ref/contrib/admin/).
+  * `forms.py`: form definitions that are used on the frontend. Documentation [here](https://docs.djangoproject.com/en/5.2/ref/forms/api/).
+  * `models.py`: database schema and table (model) definitions. Documentation [here](https://docs.djangoproject.com/en/5.2/topics/db/models/).
+  * `signals.py`: code for Django's signal dispatcher to be run when certain events occur. Documentation [here](https://docs.djangoproject.com/en/5.2/topics/signals/).
+  * `tests.py`: tests run on GitHub Actions. Documentation [here](https://docs.djangoproject.com/en/5.1/topics/testing/overview/).
+  * `urls.py`: maps different URL paths corresponding views. Documentation [here](https://docs.djangoproject.com/en/5.2/topics/http/urls/).
+  * `views.py`: handles HTTP requests by _typically_ querying the database, performing business logic, and responding with templates and corresponding data. Documentation [here](https://docs.djangoproject.com/en/5.1/topics/http/views/).
