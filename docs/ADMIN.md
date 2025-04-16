@@ -5,6 +5,7 @@ This page contains information for users with elevated privileges on the site.
 ## Users, Groups, and Permissions
 
 Django applications have two built-in users "statuses": `staff` and `superuser`.
+
 | Status      | Description                                                                   |
 |-------------|-------------------------------------------------------------------------------|
 | `staff`     | Designates whether a user can log into the Django admin portal.               |

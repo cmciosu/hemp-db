@@ -28,13 +28,12 @@ This page details how to set up a local development environment and develop feat
   * `git checkout -b "<feature_name>"`
 
 2. Develop feature
-  * For features that alter database schema, make and run migrations:
-    * Access the running container's shell with `docker exec -it hempdb-dev bash` in a separate terminal
-    * `python manage.py makemigrations`
-    * `python manage.py migrate`
+  * For features that alter database schema, make and run migrations with the following commands:
+  * `docker exec -it hempdb-dev bash`
+  * `python manage.py makemigrations`
+  * `python manage.py migrate`
   * For features that add new env vars, add them to your .env, the .env.example, and to Vercel
-  * Add any new dependencies to requirements.txt. 
-    * You will need to rebuild your docker image when dependencies are added.
+  * Add any new dependencies to requirements.txt. You will need to rebuild your docker image when dependencies are added.
 
 3. Lint with ruff
   * Access the running container's shell with `docker exec -it hempdb-dev bash` in a separate terminal
