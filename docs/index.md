@@ -1,14 +1,14 @@
 # HempDB Documentation
 
-## Documentation intended for Developers
-
-- [Developing](DEVELOP.md)
-- [Build & CI/CD](BUILD.md)
-- [Infrastructure](INFRA.md)
-- [File Structure](FILES.md)
-- [DB Relations & Schema](MODELS.md)
-
-## Documentation intended for End Users
+## Documentation for Users
 
 - [Public Users](USER.md)
 - [CMCI Users (Admins)](ADMIN.md)
+
+## Documentation for Developers
+
+- [Local Setup and Development](DEVELOP.md)
+- [CI/CD, Tests, and Vercel](BUILD.md)
+- [Database Schema & Models](MODELS.md)
+- [Infrastructure](INFRA.md)
+- [File Structure](FILES.md)
