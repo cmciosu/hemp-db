@@ -79,7 +79,6 @@ class stakeholderGroups(models.Model):
 
 class Stage(models.Model):
     stage = models.CharField(max_length=1024)
-    category = models.IntegerField()
 
     def __str__(self):
         return self.stage
@@ -159,8 +158,8 @@ class CompanyDetail(models.Model):
     Country = models.CharField(max_length=250)
     Latitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True)
     Longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=512, blank=True)
+    Solutions = models.ManyToManyField(Solution, blank=True)
     Category = models.ManyToManyField(Category, blank=True)
     stakeholderGroup = models.ManyToManyField(stakeholderGroups, blank=True)
     Stage = models.ManyToManyField(Stage, blank=True)
