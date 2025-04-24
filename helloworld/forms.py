@@ -117,6 +117,7 @@ class PendingCompanyForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['Latitude'].label = "Latitude (Up to 6 decimals)"
         self.fields['Longitude'].label = "Longitude (Up to 6 decimals)"
+        self.fields['State'].label = "State (full name, unabbreviated)"
 
 class CategoryForm(forms.ModelForm): 
     
