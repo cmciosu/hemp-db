@@ -28,6 +28,8 @@ def email_admins(action: str, company_name: str, pending_change_id: int) -> None
     
     View this pending change at: {settings.SITE_URL}/companies_pending/{pending_change_id}
     View all pending changes at: {settings.SITE_URL}/changes
+    
+    Please disregard this email if the above links don't work or if they send you to a site other than "hempdb.vercel.app". We apologize for any inconveniences.
     """
 
     # HTML (clickable links)
@@ -36,6 +38,8 @@ def email_admins(action: str, company_name: str, pending_change_id: int) -> None
     
     <p>View this pending change <a href="{settings.SITE_URL}/companies_pending/{pending_change_id}">here</a>.</p>
     <p>View all pending changes <a href="{settings.SITE_URL}/changes">here</a>.</p>
+    
+    <p>Please disregard this email if the above links don't work or if they send you to a site other than "hempdb.vercel.app". We apologize for any inconveniences.</p>
     """
 
     # Group IDs from auth_group containing 'admin' (case insensitive)
