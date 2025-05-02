@@ -241,29 +241,40 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.querySelector('#id_q');
-    const searchForm = document.querySelector('#live-search-form');
     const resultsContainer = document.querySelector('tbody');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    let debounceTimeout = null;
 
     searchInput.addEventListener('input', function () {
-      const query = searchInput.value;
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      clearTimeout(debounceTimeout);
 
-      fetch('/companies/search/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': csrfToken
-        },
-        body: new URLSearchParams({ 'q': query, 'company-search': true })
-      })
-      .then(response => response.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newResults = doc.querySelector('tbody').innerHTML;
-        resultsContainer.innerHTML = newResults;
-      })
-      .catch(error => console.error('Error:', error));
+      debounceTimeout = setTimeout(() => {
+        const query = searchInput.value.trim();
+
+        // If input is cleared redirect user back to companies page
+        if (!query) {
+          window.location.href = '/companies';
+          return;
+        }
+
+        fetch('/companies/search/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+          },
+          body: new URLSearchParams({ 'q': query, 'company-search': true })
+        })
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newResults = doc.querySelector('tbody').innerHTML;
+          resultsContainer.innerHTML = newResults;
+        })
+        .catch(error => console.error('Error:', error));
+      }, 300);      
     });
   });
 </script>
