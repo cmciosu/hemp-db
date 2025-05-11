@@ -442,7 +442,7 @@ def view_company(request: HttpRequest, id: int) -> HttpResponse:
 
     return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
-@staff_member_required
+@login_required
 def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     """
     Staff Route. Shows all column values for a single pending company, 
@@ -463,6 +463,11 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     fields = []
 
     obj = PendingChanges.objects.get(id=id)
+    
+    # Redirect if user is not the author of the change and the user isn't staff
+    # - Prevents people from manually typing in change IDs in the URL, but also lets staff see any ID
+    if (request.user != obj.author) and not request.user.is_staff:
+        return redirect('index')
     
     if(obj.changeType == "edit"):
         company = obj.company
@@ -565,7 +570,9 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     if change.changeType == 'deletion':
         company = Company.objects.get(id = change.company.id)
         company.delete()
-        change.delete()
+
+        change.status = PendingChanges.PendingStatus.APPROVED
+        change.save()
 
         return redirect('/changes')
     
@@ -594,8 +601,8 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             m2m_values = getattr(pendingCompany, field.name).all()
             getattr(company, field.name).set(m2m_values)
 
-    change.delete()
-    pendingCompany.delete()
+    change.status = PendingChanges.PendingStatus.APPROVED
+    change.save()
 
     return redirect('/changes')
 
@@ -612,10 +619,9 @@ def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
     response (HttpResponse): HTTP response redirecting to PendingChanges view
     """
     change = PendingChanges.objects.get(id=id)
-    if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.get(id=change.pending_company.id)
-        company.delete()
-    change.delete()
+
+    change.status = PendingChanges.PendingStatus.REJECTED
+    change.save()
 
     return redirect('/changes')
 
@@ -1288,7 +1294,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     # Edit Changes (linked to a Company object)
     edit_changes = (
         Company.objects.prefetch_related("pendingchanges_set__pending_company")
-        .filter(pendingchanges__changeType="edit")
+        .filter(pendingchanges__changeType="edit",
+                pendingchanges__status=PendingChanges.PendingStatus.PENDING)
         .distinct()
     )
     edit_changes_dict = {
@@ -1298,7 +1305,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
 
     # Create Changes (linked to a Pending Company object)
     create_changes = (
-        PendingChanges.objects.filter(changeType="create")
+        PendingChanges.objects.filter(changeType="create",
+                                      status=PendingChanges.PendingStatus.PENDING,)
         .select_related("pending_company")
         .order_by("-created_at")
     )
@@ -1312,7 +1320,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     # Delete Changes (linked to a Company object)
     delete_changes = (
         Company.objects.prefetch_related("pendingchanges_set")
-        .filter(pendingchanges__changeType="deletion")
+        .filter(pendingchanges__changeType="deletion",
+                pendingchanges__status=PendingChanges.PendingStatus.PENDING,)
         .distinct()
     )
     delete_changes_dict = {
@@ -1328,6 +1337,14 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     }
     
     return render(request, 'companies_pending.html', {'changes_list': changes_list})
+
+@login_required
+def myChanges(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect('user/login/')
+    
+    changes = PendingChanges.objects.filter(author=request.user)
+    return render(request, 'my_changes.html', {'changes': changes})
 
 def map(request: HttpRequest) -> HttpResponse:
     """
