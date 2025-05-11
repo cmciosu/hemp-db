@@ -86,4 +86,5 @@ urlpatterns = [
 
     # Changes
     path('changes/', views.dbChanges),
+    path('my_changes/', views.myChanges, name='my_changes'),
 ]
