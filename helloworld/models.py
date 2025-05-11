@@ -189,7 +189,7 @@ class CompanyDetail(models.Model):
     GMP = models.CharField(max_length=250, blank=True)
     news = models.CharField(max_length=1024, blank=True)
     reviews = models.CharField(max_length=512, blank=True)
-    dateCreated = models.DateTimeField(auto_now_add=True, blank=False) # default set to 1/1/2024; arbitrary date to fill the entry
+    dateCreated = models.DateTimeField(default=timezone.now, blank=False) # default set to 1/1/2024 (12/31/2023 4pm PST); arbitrary date to fill the entry
     lastUpdated = models.DateTimeField(auto_now=True, blank=False)
 
     #

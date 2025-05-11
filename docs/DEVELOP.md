@@ -1,6 +1,6 @@
 # Developing on HempDB
 
-This page details how to set up a local development environment and develop features. This page is intended for developers.
+This page details how to set up a local development environment and develop features. This page is intended for developers. Please read this entire page before developing on HempDB.
 
 ## Local Setup
 
@@ -43,4 +43,10 @@ This page details how to set up a local development environment and develop feat
 4. Push branch and open PR
 
 ### ⚠️⚠️⚠️ Before Pushing to GitHub, Ensure `DEBUG = False` ⚠️⚠️⚠️
-  * Go to `hempdb/settings.py`, set Debug to False
+
+To do this, go to `hempdb/settings.py` and set `DEBUG = False`
+
+**Important:** The `DEBUG` flag is also used to configure things like whether emails are actually sent to people, or just logged to the console (see `settings.py`). As a result, please set `DEBUG = True` when you're developing locally.
+
+* For example, if you edit a company locally, an email notification may get sent to non-developers, even if you're connected to the development database.
+* This happens because of the nature of the development database. It was created by duplicating the production database, which contains information like users and if they are in an admin group (this is how the email system determines who to send emails to in `notifications.py`).

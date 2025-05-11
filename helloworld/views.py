@@ -36,7 +36,10 @@ from .authentication import activate_email
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import Permission
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
@@ -251,6 +254,14 @@ def register(request: HttpRequest) -> HttpResponse:
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+
+            # Give new users the permission to view companies
+            content_type = ContentType.objects.get_for_model(Company)
+            view_company_permission = Permission.objects.get(
+                codename='view_company',
+                content_type=content_type,
+            )
+            user.user_permissions.add(view_company_permission)
             email = form.cleaned_data.get('email')
             activate_email(request=request, user=user, to_email=email)
             return redirect('/')
@@ -732,7 +743,7 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
 
     return redirect('/companies')
 
-@staff_member_required
+@permission_required("helloworld.view_company")
 def export_companies(request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all data or filtered data from Company table
@@ -784,7 +795,7 @@ def export_companies(request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_category")
 def categories(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all categories from Category table
@@ -823,7 +834,7 @@ def remove_categories(_request: HttpRequest, id: int) -> HttpResponse:
     category.delete()
     return redirect('/categories')
 
-@staff_member_required
+@permission_required("helloworld.view_category")
 def export_categories(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Category table to csv
@@ -846,7 +857,7 @@ def export_categories(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_solution")
 def solutions(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all solutions from Solution table
@@ -885,7 +896,7 @@ def remove_solutions(_request: HttpRequest, id: int):
     solution.delete()
     return redirect('/solutions')
 
-@staff_member_required
+@permission_required("helloworld.view_solution")
 def export_solutions(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Solutions table to csv
@@ -908,7 +919,7 @@ def export_solutions(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_stakeholdergroups")
 def StakeholderGroups(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from stakeholderGroups table
@@ -947,7 +958,7 @@ def remove_stakeholder_groups(_request: HttpRequest, id: int) -> HttpResponse:
     group.delete()
     return redirect('/stakeholder-groups')
 
-@staff_member_required
+@permission_required("helloworld.view_stakeholdergroups")
 def export_stakeholder_groups(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in stakeholderGroups table to csv
@@ -970,7 +981,7 @@ def export_stakeholder_groups(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_stage")
 def stages(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Stage table
@@ -1009,7 +1020,7 @@ def remove_stages(_request: HttpRequest, id: int) -> HttpResponse:
     stage.delete()
     return redirect('/stages')
 
-@staff_member_required
+@permission_required("helloworld.view_stage")
 def export_stages(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Stage table to csv
@@ -1032,7 +1043,7 @@ def export_stages(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_productgroup")
 def productGroups(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from productGroup table
@@ -1071,7 +1082,7 @@ def remove_product_groups(_request: HttpRequest, id: int) -> HttpResponse:
     group.delete()
     return redirect('/product-groups')
 
-@staff_member_required
+@permission_required("helloworld.view_productgroup")
 def export_product_groups(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in ProductGroup table to csv
@@ -1094,7 +1105,7 @@ def export_product_groups(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_status")
 def status(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Status table
@@ -1133,7 +1144,7 @@ def remove_status(_request: HttpRequest, id: int) -> HttpResponse:
     status.delete()
     return redirect('/status')
 
-@staff_member_required
+@permission_required("helloworld.view_status")
 def export_status(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Status table to csv
@@ -1156,7 +1167,7 @@ def export_status(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_grower")
 def grower(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Grower table
@@ -1195,7 +1206,7 @@ def remove_grower(_request: HttpRequest, id: int) -> HttpResponse:
     grower.delete()
     return redirect('/grower')
 
-@staff_member_required
+@permission_required("helloworld.view_grower")
 def export_grower(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Grower table to csv
@@ -1218,7 +1229,7 @@ def export_grower(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_industry")
 def industry(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Industry table
@@ -1257,6 +1268,7 @@ def remove_industry(_request: HttpRequest, id: int) -> HttpResponse:
     industry.delete()
     return redirect('/industry')
 
+@permission_required("helloworld.view_industry")
 def export_industry(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Industry table to csv
