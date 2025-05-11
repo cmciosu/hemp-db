@@ -232,6 +232,15 @@ class PendingChanges(models.Model):
     created_at = models.DateTimeField(default=now)
     changeType = models.CharField(max_length=250)
 
+    # Marks if a pending change is either pending, approved, or rejected
+    # ["Pending", "Approved", "Rejected"]
+    class PendingStatus(models.TextChoices):
+        PENDING = "P", _("Pending")
+        APPROVED = "A", _("Approved")
+        REJECTED = "R", _("Rejected")
+
+    status = models.CharField(max_length=250, choices=PendingStatus.choices, default=PendingStatus.PENDING)
+
     class Meta:
         db_table = "pending_change"
 
