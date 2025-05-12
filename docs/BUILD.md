@@ -8,7 +8,13 @@ This page contains information on the build pipeline for HempDB and is intended 
 
 The [Django CI workflow](https://github.com/cmciosu/hemp-db/actions/workflows/migrate-test-lint.yml) is configured by the `migrate-test-lint.yml` file. This workflow runs on PRs opened to main. 
 
-Its purpose is to run migrations, tests, and the lint check. This workflow must pass before a PR is merged to main. Tests are found in `helloworld/tests.py`.
+Its purpose is to run migrations on the **CI database**, tests, and the lint check. This workflow must pass before a PR is merged to main. Tests are found in `helloworld/tests.py`.
+
+### Deploy Workflow
+
+The [Django Deploy to Prod workflow](https://github.com/cmciosu/hemp-db/actions/workflows/deploy.yml) is configured by the `deploy.yml` file. This workflow runs on pushes (PR merges) to main.
+
+Its purpose is to run migrations on the **production database** as changes are merged into main and deployed to the production Vercel deployment.
 
 ### Pages Workflow
 
