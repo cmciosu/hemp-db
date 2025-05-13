@@ -47,6 +47,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
+from django.conf import settings
 
 import csv
 import geocoder
@@ -310,7 +311,7 @@ def companies(request: HttpRequest) -> HttpResponse:
             form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
             pending_change = PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
-            email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
+            email_admins('created', company.Name, pending_change.id, request.get_host())
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
@@ -386,7 +387,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
             getattr(new_company, m2m_field.name).set(related_objects)
 
         pending_change = PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
-        email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
+        email_admins('edited', new_company.Name, pending_change.id, request.get_host())
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
@@ -739,7 +740,7 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     pending_change = PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
 
     messages.info(request, 'Deletion of Company requested')
-    email_admins(action='deleted', company_name=companyToDelete.Name, pending_change_id=pending_change.id)
+    email_admins('deleted', companyToDelete.Name, pending_change.id, request.get_host())
 
     return redirect('/companies')
 
@@ -1370,7 +1371,7 @@ def map(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company location data
     """
     # Differentiate production cache key from others to avoid conflicts
-    if 'hempdb.vercel.app' in request.get_host():
+    if settings.PRODUCTION_URL in request.get_host():
         cache_key = 'production_map_data'
     else:
         cache_key = 'development_map_data'

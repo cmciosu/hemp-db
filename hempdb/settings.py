@@ -16,6 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', os.getenv('SECRET_KEY'))
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
+PRODUCTION_URL = 'hempdb.vercel.app'  # TODO: change after infra migration
 
 # For fetching datetime fields
 USE_TZ = True       # Make datetime objects timezone-aware
@@ -180,10 +181,10 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_APP_PASSWORD')
 
 if DEBUG: # Print emails to console instead of sending them
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    SITE_URL = "http://localhost:8000"
+    EMAIL_LINK = "http://localhost:8000"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    SITE_URL = "https://hempdb.vercel.app" # TODO: change after infra migration
+    EMAIL_LINK = f"https://{PRODUCTION_URL}"
 
 REDIS_URL = os.getenv('REDIS_URL').strip()
 CACHES = {
