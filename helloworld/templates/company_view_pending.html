@@ -10,7 +10,7 @@
     <h1 class="d-flex justify-content-center mb-2">{{ change.company.Name }}</h1>
     <h3 class="d-flex justify-content-center mb-5">Change Type: {{ change.changeType }}</h3>
     <hr />
-    {% if user.is_staff %}
+    {% if user.is_staff and change.status == "P" %}
     <a type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="/changes"> Back </a>
     <a type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="{% url 'company-pending-approve' change.id %}"> Approve </a>
     <a type="button" class="btn btn-secondary rounded-pill mx-3 my-2 px-3" href="{% url 'company-pending-reject' change.id %}"> Reject </a>
