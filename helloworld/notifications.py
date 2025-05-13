@@ -18,7 +18,7 @@ def email_admins(action: str, company_name: str, pending_change_id: int, request
     """
 
     # If DEBUG is True, this email will be logged to the console, NOT sent (settings.py)
-    if settings.DEBUG == False:                         # Email will be sent
+    if not settings.DEBUG:                              # Email will be sent
         if settings.PRODUCTION_URL not in request_host: # Request wansn't made from prod
             return                                      # Don't send email
 
