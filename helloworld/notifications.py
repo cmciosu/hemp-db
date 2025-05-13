@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Group
 
 # Django Emails: https://docs.djangoproject.com/en/5.1/topics/email/
 
-def email_admins(action: str, company_name: str, pending_change_id: int) -> None:
+def email_admins(action: str, company_name: str, pending_change_id: int, request_host: str) -> None:
     """
     Sends an email notification to Admins and SrAdmins when a company has been created, edited, or deleted.
 
@@ -14,7 +14,13 @@ def email_admins(action: str, company_name: str, pending_change_id: int) -> None
     action (str): Can only be 'created', 'edited', or 'deleted' depending on the action.
     company_name (str): Name of the company
     pending_change_id (int): ID of the pending change
+    request_host (str): the host that made the request (e.g. 'hempdb.vercel.app')
     """
+
+    # If DEBUG is True, this email will be logged to the console, NOT sent (settings.py)
+    if not settings.DEBUG:                              # Email will be sent
+        if settings.PRODUCTION_URL not in request_host: # Request wansn't made from prod
+            return                                      # Don't send email
 
     # Invalid action
     if action not in ['created', 'edited', 'deleted']:
@@ -26,20 +32,14 @@ def email_admins(action: str, company_name: str, pending_change_id: int) -> None
     text_message = f"""
     A company called "{company_name}" has been {action} and is now pending review.
     
-    View this pending change at: {settings.SITE_URL}/companies_pending/{pending_change_id}
-    View all pending changes at: {settings.SITE_URL}/changes
-    
-    Please disregard this email if the above links don't work or if they send you to a site other than "hempdb.vercel.app". We apologize for any inconveniences.
+    View pending changes at: {settings.EMAIL_LINK}/changes
     """
 
     # HTML (clickable links)
     html_message = f"""
     <p>A company called "{company_name}" has been {action} and is now pending review.</p>
     
-    <p>View this pending change <a href="{settings.SITE_URL}/companies_pending/{pending_change_id}">here</a>.</p>
-    <p>View all pending changes <a href="{settings.SITE_URL}/changes">here</a>.</p>
-    
-    <p>Please disregard this email if the above links don't work or if they send you to a site other than "hempdb.vercel.app". We apologize for any inconveniences.</p>
+    <p>View pending changes <a href="{settings.EMAIL_LINK}/changes">here</a>.</p>
     """
 
     # Group IDs from auth_group containing 'admin' (case insensitive)
