@@ -7,6 +7,8 @@
 - [Infrastructure](INFRA.md)
 - [File Structure](FILES.md)
 - [DB Relations & Schema](MODELS.md)
+- [Database Auditing](AUDIT.md)
+- [Cron Jobs & Future Automation](CRON.md)
 
 ## Documentation intended for End Users
 

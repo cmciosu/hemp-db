@@ -16,7 +16,7 @@ Run `python manage.py runcrons`. Specify `--force` if re-executing a cron job af
 A cron job will show up successful with a [✔] and unsuccessful with a [✘]
 
 ### Successful Output Example:
-
+(Text generated here originates from the file `cron.py` and the audit script `audit.py`)
 ```
 Running Crons
 ========================================
