@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 from datetime import datetime
-from django_cron import CronJobBase, Schedule, logging
+from django_cron import CronJobBase, Schedule
 from helloworld.management.commands.audit import Command as Audit
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import User, Group
@@ -70,7 +70,7 @@ class CronAudit(CronJobBase):
                     subject=f"[HempDB] Database Audit Log Generation {filedate}",
                     body=f"The Database Audit job was successful, the new file created is attached to this message with the name: {auditlog}. The file is available for developers under the directory: hemp-db/helloworld/management/commands/auditlogs.",
                     from_email=EMAIL_USER,
-                    to=[AUDIT_RECIPIENT]
+                    to=admin_emails + [AUDIT_RECIPIENT]
                 )
 
                 email.attach(auditlog, file.read(), 'text/csv')
@@ -85,7 +85,7 @@ class CronAudit(CronJobBase):
                 subject=f"[HempDB] Database Audit Log Failure {filedate}",
                 body=f"The Database Audit job failed. Please alert developers to the status of the audit generation. The following error is:\n\n\n{e}",
                 from_email=EMAIL_USER,
-                to=[AUDIT_RECIPIENT]
+                to=admin_emails + [AUDIT_RECIPIENT]
             )
             email.send()
 
