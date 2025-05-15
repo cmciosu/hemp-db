@@ -32,7 +32,7 @@ Running the script `admin.py` will generate a .csv file with the name: `data_aud
 To execute the command in the terminal:
 
 * Enter the root directory `hemp-db`
-* Run `python manage.py audit
+* Run `python manage.py audit`
 
 
 ## Limitations

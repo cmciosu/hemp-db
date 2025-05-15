@@ -90,23 +90,23 @@ class PendingCompanyForm(forms.ModelForm):
     required_css_class = 'required'
     Solutions = forms.ModelMultipleChoiceField(
             queryset=Solution.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     Category = forms.ModelMultipleChoiceField(
             queryset=Category.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     stakeholderGroup = forms.ModelMultipleChoiceField(
             queryset=stakeholderGroups.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     Stage = forms.ModelMultipleChoiceField(
             queryset=Stage.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
     productGroup = forms.ModelMultipleChoiceField(
             queryset=ProductGroup.objects.all(),
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '8', 'style': 'margin-bottom: 10px;'}),
             required=False)
 
     class Meta:
@@ -117,6 +117,7 @@ class PendingCompanyForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['Latitude'].label = "Latitude (Up to 6 decimals)"
         self.fields['Longitude'].label = "Longitude (Up to 6 decimals)"
+        self.fields['State'].label = "State (full name, unabbreviated)"
 
 class CategoryForm(forms.ModelForm): 
     

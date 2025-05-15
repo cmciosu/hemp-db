@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.utils.translation import gettext_lazy as _
 
 # Django strongly encourages using lowercase table names using MySQL
 # https://docs.djangoproject.com/en/5.1/ref/models/options/
@@ -79,7 +80,6 @@ class stakeholderGroups(models.Model):
 
 class Stage(models.Model):
     stage = models.CharField(max_length=1024)
-    category = models.IntegerField()
 
     def __str__(self):
         return self.stage
@@ -159,8 +159,8 @@ class CompanyDetail(models.Model):
     Country = models.CharField(max_length=250)
     Latitude = models.DecimalField(max_digits=8, decimal_places=6, null=True, blank=True)
     Longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    Solutions = models.ManyToManyField(Solution, blank=True)
     Website = models.CharField(max_length=512, blank=True)
+    Solutions = models.ManyToManyField(Solution, blank=True)
     Category = models.ManyToManyField(Category, blank=True)
     stakeholderGroup = models.ManyToManyField(stakeholderGroups, blank=True)
     Stage = models.ManyToManyField(Stage, blank=True)
@@ -189,7 +189,7 @@ class CompanyDetail(models.Model):
     GMP = models.CharField(max_length=250, blank=True)
     news = models.CharField(max_length=1024, blank=True)
     reviews = models.CharField(max_length=512, blank=True)
-    dateCreated = models.DateTimeField(auto_now_add=True, blank=False) # default set to 1/1/2024; arbitrary date to fill the entry
+    dateCreated = models.DateTimeField(default=timezone.now, blank=False) # default set to 1/1/2024 (12/31/2023 4pm PST); arbitrary date to fill the entry
     lastUpdated = models.DateTimeField(auto_now=True, blank=False)
 
     #
@@ -232,6 +232,15 @@ class PendingChanges(models.Model):
     
     created_at = models.DateTimeField(default=now)
     changeType = models.CharField(max_length=250)
+
+    # Marks if a pending change is either pending, approved, or rejected
+    # ["Pending", "Approved", "Rejected"]
+    class PendingStatus(models.TextChoices):
+        PENDING = "P", _("Pending")
+        APPROVED = "A", _("Approved")
+        REJECTED = "R", _("Rejected")
+
+    status = models.CharField(max_length=250, choices=PendingStatus.choices, default=PendingStatus.PENDING)
 
     class Meta:
         db_table = "pending_change"

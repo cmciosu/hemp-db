@@ -1,0 +1,54 @@
+{% extends "master.html" %}
+
+{% block title %}
+  HempDB
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="margin-top: 100px;">
+  <h2 class="mb-4">My Submitted Changes</h2>
+
+  {% if changes %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Company Name</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for change in changes %}
+        <tr>
+          <td>{{ change.id }}</td>
+          <td>
+            {% if change.changeType == "create" %}
+              <a href="{% url 'company-view-pending' change.id %}">{{ change.pending_company.Name }}</a>
+            {% elif change.changeType == "edit" or change.changeType == "deletion" %}
+            <a href="{% url 'company-view-pending' change.id %}">{{ change.company.Name }}</a>
+            {% else %}
+              Unknown
+            {% endif %}
+          </td>
+          <td>    
+            {% if change.status == 'P' %}
+              <span style="color: orange;">{{ change.get_status_display }}</span>
+            {% elif change.status == 'A' %}
+              <span style="color: green;">{{ change.get_status_display }}</span>
+            {% elif change.status == 'R' %}
+              <span style="color: red;">{{ change.get_status_display }}</span>
+            {% else %}
+              <span style="color: gray;">{{ change.get_status_display }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No changes submitted yet.</p>
+  {% endif %}
+</div>
+ 
+{% endblock %}

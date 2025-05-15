@@ -36,7 +36,10 @@ from .authentication import activate_email
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import Permission
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
@@ -44,6 +47,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
+from django.conf import settings
 
 import csv
 import geocoder
@@ -251,6 +255,14 @@ def register(request: HttpRequest) -> HttpResponse:
             user = form.save(commit=False)
             user.is_active = False
             user.save()
+
+            # Give new users the permission to view companies
+            content_type = ContentType.objects.get_for_model(Company)
+            view_company_permission = Permission.objects.get(
+                codename='view_company',
+                content_type=content_type,
+            )
+            user.user_permissions.add(view_company_permission)
             email = form.cleaned_data.get('email')
             activate_email(request=request, user=user, to_email=email)
             return redirect('/')
@@ -299,7 +311,7 @@ def companies(request: HttpRequest) -> HttpResponse:
             form.save_m2m() # Save many-to-many form data
             messages.info(request, 'Company successfully submitted')
             pending_change = PendingChanges.objects.create(pending_company=company, changeType='create', author=request.user)
-            email_admins(action='created', company_name=company.Name, pending_change_id=pending_change.id)
+            email_admins('created', company.Name, pending_change.id, request.get_host())
             return redirect('/companies')  # Redirect to a success page
     else:
         form = PendingCompanyForm()
@@ -375,7 +387,7 @@ def edit_company(request: HttpRequest, id: int) -> HttpResponse:
             getattr(new_company, m2m_field.name).set(related_objects)
 
         pending_change = PendingChanges.objects.create(pending_company=new_company, changeType='edit', company=company, author=request.user)
-        email_admins(action='edited', company_name=new_company.Name, pending_change_id=pending_change.id)
+        email_admins('edited', new_company.Name, pending_change.id, request.get_host())
         return redirect('/companies')  # Redirect to a success page
     else: 
         form = PendingCompanyForm(instance=company)
@@ -442,7 +454,7 @@ def view_company(request: HttpRequest, id: int) -> HttpResponse:
 
     return render(request, 'company_view.html', {'company': company, 'obj': obj})
 
-@staff_member_required
+@login_required
 def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     """
     Staff Route. Shows all column values for a single pending company, 
@@ -463,6 +475,11 @@ def view_company_pending(request: HttpRequest, id: int) -> HttpResponse:
     fields = []
 
     obj = PendingChanges.objects.get(id=id)
+    
+    # Redirect if user is not the author of the change and the user isn't staff
+    # - Prevents people from manually typing in change IDs in the URL, but also lets staff see any ID
+    if (request.user != obj.author) and not request.user.is_staff:
+        return redirect('index')
     
     if(obj.changeType == "edit"):
         company = obj.company
@@ -565,7 +582,9 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     if change.changeType == 'deletion':
         company = Company.objects.get(id = change.company.id)
         company.delete()
-        change.delete()
+
+        change.status = PendingChanges.PendingStatus.APPROVED
+        change.save()
 
         return redirect('/changes')
     
@@ -594,8 +613,8 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
             m2m_values = getattr(pendingCompany, field.name).all()
             getattr(company, field.name).set(m2m_values)
 
-    change.delete()
-    pendingCompany.delete()
+    change.status = PendingChanges.PendingStatus.APPROVED
+    change.save()
 
     return redirect('/changes')
 
@@ -612,10 +631,9 @@ def view_company_reject(_request: HttpRequest, id: int) -> HttpResponse:
     response (HttpResponse): HTTP response redirecting to PendingChanges view
     """
     change = PendingChanges.objects.get(id=id)
-    if change.changeType == 'create' or change.changeType == 'edit':
-        company = PendingCompany.objects.get(id=change.pending_company.id)
-        company.delete()
-    change.delete()
+
+    change.status = PendingChanges.PendingStatus.REJECTED
+    change.save()
 
     return redirect('/changes')
 
@@ -722,11 +740,11 @@ def remove_companies(request: HttpRequest, id: int) -> HttpResponse:
     pending_change = PendingChanges.objects.create(company=companyToDelete, changeType='deletion', author=request.user)
 
     messages.info(request, 'Deletion of Company requested')
-    email_admins(action='deleted', company_name=companyToDelete.Name, pending_change_id=pending_change.id)
+    email_admins('deleted', companyToDelete.Name, pending_change.id, request.get_host())
 
     return redirect('/companies')
 
-@staff_member_required
+@permission_required("helloworld.view_company")
 def export_companies(request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all data or filtered data from Company table
@@ -778,7 +796,7 @@ def export_companies(request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_category")
 def categories(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all categories from Category table
@@ -817,7 +835,7 @@ def remove_categories(_request: HttpRequest, id: int) -> HttpResponse:
     category.delete()
     return redirect('/categories')
 
-@staff_member_required
+@permission_required("helloworld.view_category")
 def export_categories(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Category table to csv
@@ -840,7 +858,7 @@ def export_categories(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_solution")
 def solutions(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all solutions from Solution table
@@ -879,7 +897,7 @@ def remove_solutions(_request: HttpRequest, id: int):
     solution.delete()
     return redirect('/solutions')
 
-@staff_member_required
+@permission_required("helloworld.view_solution")
 def export_solutions(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Solutions table to csv
@@ -902,7 +920,7 @@ def export_solutions(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_stakeholdergroups")
 def StakeholderGroups(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from stakeholderGroups table
@@ -941,7 +959,7 @@ def remove_stakeholder_groups(_request: HttpRequest, id: int) -> HttpResponse:
     group.delete()
     return redirect('/stakeholder-groups')
 
-@staff_member_required
+@permission_required("helloworld.view_stakeholdergroups")
 def export_stakeholder_groups(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in stakeholderGroups table to csv
@@ -964,7 +982,7 @@ def export_stakeholder_groups(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_stage")
 def stages(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Stage table
@@ -1003,7 +1021,7 @@ def remove_stages(_request: HttpRequest, id: int) -> HttpResponse:
     stage.delete()
     return redirect('/stages')
 
-@staff_member_required
+@permission_required("helloworld.view_stage")
 def export_stages(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Stage table to csv
@@ -1026,7 +1044,7 @@ def export_stages(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_productgroup")
 def productGroups(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from productGroup table
@@ -1065,7 +1083,7 @@ def remove_product_groups(_request: HttpRequest, id: int) -> HttpResponse:
     group.delete()
     return redirect('/product-groups')
 
-@staff_member_required
+@permission_required("helloworld.view_productgroup")
 def export_product_groups(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in ProductGroup table to csv
@@ -1088,7 +1106,7 @@ def export_product_groups(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_status")
 def status(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Status table
@@ -1127,7 +1145,7 @@ def remove_status(_request: HttpRequest, id: int) -> HttpResponse:
     status.delete()
     return redirect('/status')
 
-@staff_member_required
+@permission_required("helloworld.view_status")
 def export_status(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Status table to csv
@@ -1150,7 +1168,7 @@ def export_status(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_grower")
 def grower(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Grower table
@@ -1189,7 +1207,7 @@ def remove_grower(_request: HttpRequest, id: int) -> HttpResponse:
     grower.delete()
     return redirect('/grower')
 
-@staff_member_required
+@permission_required("helloworld.view_grower")
 def export_grower(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Grower table to csv
@@ -1212,7 +1230,7 @@ def export_grower(_request: HttpRequest) -> HttpResponse:
 
     return response
 
-@login_required
+@permission_required("helloworld.view_industry")
 def industry(request: HttpRequest) -> HttpResponse:
     """
     Protected Route. Shows all entries from Industry table
@@ -1251,6 +1269,7 @@ def remove_industry(_request: HttpRequest, id: int) -> HttpResponse:
     industry.delete()
     return redirect('/industry')
 
+@permission_required("helloworld.view_industry")
 def export_industry(_request: HttpRequest) -> HttpResponse:
     """
     Staff Route. Exports all entries in Industry table to csv
@@ -1288,7 +1307,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     # Edit Changes (linked to a Company object)
     edit_changes = (
         Company.objects.prefetch_related("pendingchanges_set__pending_company")
-        .filter(pendingchanges__changeType="edit")
+        .filter(pendingchanges__changeType="edit",
+                pendingchanges__status=PendingChanges.PendingStatus.PENDING)
         .distinct()
     )
     edit_changes_dict = {
@@ -1298,7 +1318,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
 
     # Create Changes (linked to a Pending Company object)
     create_changes = (
-        PendingChanges.objects.filter(changeType="create")
+        PendingChanges.objects.filter(changeType="create",
+                                      status=PendingChanges.PendingStatus.PENDING,)
         .select_related("pending_company")
         .order_by("-created_at")
     )
@@ -1312,7 +1333,8 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     # Delete Changes (linked to a Company object)
     delete_changes = (
         Company.objects.prefetch_related("pendingchanges_set")
-        .filter(pendingchanges__changeType="deletion")
+        .filter(pendingchanges__changeType="deletion",
+                pendingchanges__status=PendingChanges.PendingStatus.PENDING,)
         .distinct()
     )
     delete_changes_dict = {
@@ -1329,6 +1351,14 @@ def dbChanges(request: HttpRequest) -> HttpResponse:
     
     return render(request, 'companies_pending.html', {'changes_list': changes_list})
 
+@login_required
+def myChanges(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect('user/login/')
+    
+    changes = PendingChanges.objects.filter(author=request.user)
+    return render(request, 'my_changes.html', {'changes': changes})
+
 def map(request: HttpRequest) -> HttpResponse:
     """
     Public route. Passes data about each company to map.html
@@ -1341,7 +1371,7 @@ def map(request: HttpRequest) -> HttpResponse:
     response (HttpResponse): HTTP response containing company location data
     """
     # Differentiate production cache key from others to avoid conflicts
-    if 'hempdb.vercel.app' in request.get_host():
+    if settings.PRODUCTION_URL in request.get_host():
         cache_key = 'production_map_data'
     else:
         cache_key = 'development_map_data'
