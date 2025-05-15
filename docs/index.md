@@ -13,3 +13,5 @@
 - [Infrastructure](INFRA.md)
 - [File Structure](FILES.md)
 - [Company Map](MAP.md)
+- [Database Auditing](AUDIT.md)
+- [Cron Jobs & Future Automation](CRON.md)

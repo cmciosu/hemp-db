@@ -10,3 +10,4 @@ class HelloworldConfig(AppConfig):
     def ready(self):
         import helloworld.signals   # Connect the signal handlers defined in signals.py
         m2m_changed.connect(helloworld.signals.update_is_staff_on_group_change) # Explicitly connect (Satisfies ruff check)
+        import helloworld.cron
