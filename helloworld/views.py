@@ -580,11 +580,12 @@ def view_company_approve(_request: HttpRequest, id: int) -> HttpResponse:
     """
     change = PendingChanges.objects.get(id=id)
     if change.changeType == 'deletion':
-        company = Company.objects.get(id = change.company.id)
-        company.delete()
-
+        
         change.status = PendingChanges.PendingStatus.APPROVED
         change.save()
+
+        company = Company.objects.get(id = change.company.id)
+        company.delete()
 
         return redirect('/changes')
     
