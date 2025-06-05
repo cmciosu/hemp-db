@@ -39,13 +39,36 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'root': {
+        'handlers' : ['console'],
+        'level' : 'DEBUG'
     },
     'loggers': {
+        'helloworld': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
         'django.db.backends': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
+        'django-cron': {
+            'handlers': ['mail_admins', 'console'],
+            'level': 'ERROR',
+            'propagate': True
+        },
+        # Fallback to catch any logging information that is not explicitly declared above
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        }
     },
 }
 
@@ -60,6 +83,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap5',
     'crispy_bootstrap5',
+    'django_cron',
 ]
 
 MIDDLEWARE = [
@@ -193,3 +217,10 @@ CACHES = {
         "LOCATION": REDIS_URL,
     }
 }
+
+CRON_CLASSES = [
+    "helloworld.cron.CronAudit",
+]
+
+# Fill in for administrators/developers to receive emails about cron jobs with (Name, Email)
+ADMINS = []
