@@ -1,5 +1,22 @@
 # HempDB
 
+HempDB has moved to <https://hempdb.cass.oregonstate.edu/>. Active development
+continues at <https://github.com/osu-cass/hemp-db>.
+
+This repository keeps the legacy application source for reference. Its Vercel
+deployment serves a "We've moved" page at every path, including old application
+and static-file URLs. The page asks visitors to update their bookmarks before the
+old site is taken offline. Visitors follow the link to the new production homepage
+when ready; there is no countdown or automatic navigation.
+
+Vercel uses `vercel.json` to deploy only `public/`, skipping dependency installation
+and the application build. The deployment does not run Django or need database
+credentials. Keep the existing Vercel project and production domain when deploying
+this change so old links continue to work. `public/index.html` contains the page,
+notice and link; Vercel rewrites all paths to this file.
+
+The documentation below describes the legacy application.
+
 ![](https://github.com/cmciosu/hemp-db/actions/workflows/migrate-test-lint.yml/badge.svg)
 ![](https://img.shields.io/github/deployments/cmciosu/hemp-db/production?style=flat&logo=vercel&label=vercel)
 ![](https://img.shields.io/website?url=https%3A%2F%2Fhempdb.vercel.app&label=HempDB)
