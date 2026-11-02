@@ -17,7 +17,6 @@ notice and link; Vercel rewrites all paths to this file.
 
 The documentation below describes the legacy application.
 
-![](https://github.com/cmciosu/hemp-db/actions/workflows/migrate-test-lint.yml/badge.svg)
 ![](https://img.shields.io/github/deployments/cmciosu/hemp-db/production?style=flat&logo=vercel&label=vercel)
 ![](https://img.shields.io/website?url=https%3A%2F%2Fhempdb.vercel.app&label=HempDB)
 
