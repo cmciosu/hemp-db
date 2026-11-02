@@ -2,6 +2,7 @@
 **/__pycache__/
 .DS_Store
 .env
+.vercel/
 .ruff_cache
 *.sql
 /venv
